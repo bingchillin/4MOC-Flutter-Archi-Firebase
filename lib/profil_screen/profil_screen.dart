@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class ProfilScreen extends StatefulWidget {
   static const routeName = 'profilScreen';
 
+
   static Future<void> navigateTo(BuildContext context) {
     return Navigator.of(context).pushNamed(routeName);
   }

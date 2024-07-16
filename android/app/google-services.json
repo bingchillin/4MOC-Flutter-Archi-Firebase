@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "280188950893",
+    "project_id": "esgichat-e899b",
+    "storage_bucket": "esgichat-e899b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:280188950893:android:65f9b9bb8babfd70182264",
+        "android_client_info": {
+          "package_name": "com.example.projet_flutter_firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFFn3FFFeOXCQmapp9HdvGeNnk3rD82ho"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

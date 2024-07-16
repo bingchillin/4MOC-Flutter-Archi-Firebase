@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:projet_flutter_firebase/pages/add_group_message_screen.dart';
 import 'package:projet_flutter_firebase/pages/log_in_screen.dart';
 import 'package:projet_flutter_firebase/pages/sign_up_screen.dart';
 import 'package:projet_flutter_firebase/profil_screen/profil_screen.dart';
-import 'package:projet_flutter_firebase/widgets/custom_elevated_button.dart';
+import 'package:projet_flutter_firebase/pages/home_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -14,60 +20,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Whazzap!',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-          useMaterial3: true,
-        ),
-        home: const MyHomePage(),
-        routes: {
-          LogInScreen.routeName: (context) => const LogInScreen(),
-          SignUpScreen.routeName: (context) => const SignUpScreen(),
-          ProfilScreen.routeName: (context) => const ProfilScreen(),
-        });
-  }
-}
-
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'Whazzap!',
-              style: TextStyle(fontSize: 24),
-            ),
-            const SizedBox(height: 32),
-
-            CustomElevatedButton(
-                text: "Connexion",
-                color: Colors.lightGreen,
-                onTap: () =>
-                    Navigator.of(context).pushNamed(LogInScreen.routeName)),
-            const SizedBox(height: 16),
-
-            CustomElevatedButton(
-              text: "Inscription",
-              color: Colors.green,
-              onTap: () =>
-                  Navigator.of(context).pushNamed(SignUpScreen.routeName),
-            ),
-            const SizedBox(height: 16),
-
-            CustomElevatedButton(
-              text: "Profil",
-              color: Colors.green,
-              onTap: () =>
-                  Navigator.of(context).pushNamed(ProfilScreen.routeName),
-            ),
-          ],
-        ),
+      title: 'Whazzap!',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        useMaterial3: true,
       ),
+      home: const LogInScreen(),
+      routes: {
+        LogInScreen.routeName: (context) => const LogInScreen(),
+        SignUpScreen.routeName: (context) => const SignUpScreen(),
+        ProfilScreen.routeName: (context) => const ProfilScreen(),
+        HomeScreen.routeName: (context) => const HomeScreen(),
+        ProfilScreen.routeName: (context) => const ProfilScreen(),
+        AddGroupMessageScreen.routeName: (context) => const AddGroupMessageScreen(),
+      },
     );
   }
 }
