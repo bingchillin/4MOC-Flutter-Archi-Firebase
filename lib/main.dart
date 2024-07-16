@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:projet_flutter_firebase/pages/log_in_screen.dart';
 import 'package:projet_flutter_firebase/pages/sign_up_screen.dart';
+import 'package:projet_flutter_firebase/profil_screen/profil_screen.dart';
 import 'package:projet_flutter_firebase/widgets/custom_elevated_button.dart';
 
 void main() {
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
         routes: {
           LogInScreen.routeName: (context) => const LogInScreen(),
           SignUpScreen.routeName: (context) => const SignUpScreen(),
+          ProfilScreen.routeName: (context) => const ProfilScreen(),
         });
   }
 }
@@ -54,6 +56,14 @@ class MyHomePage extends StatelessWidget {
               color: Colors.green,
               onTap: () =>
                   Navigator.of(context).pushNamed(SignUpScreen.routeName),
+            ),
+            const SizedBox(height: 16),
+
+            CustomElevatedButton(
+              text: "Profil",
+              color: Colors.green,
+              onTap: () =>
+                  Navigator.of(context).pushNamed(ProfilScreen.routeName),
             ),
           ],
         ),
