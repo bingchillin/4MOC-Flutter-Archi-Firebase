@@ -18,14 +18,18 @@ class _ProfilScreenState extends State<ProfilScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('ListTile Sample')),
+      appBar: AppBar(title: const Text('Profil')),
       body: ListView(
         children: const <Widget>[
           ListTile(
             leading: CircleAvatar(child: Icon(Icons.account_circle_rounded)),
             title: Text('Nom'),
-            subtitle: Text('Blablablablablbaladkqsidqokdoksqdokqsodk'),
+            subtitle: Text('Kenny'),
             trailing: Icon(Icons.update),
+          ),
+          ListTile(
+            leading: CircleAvatar(backgroundColor: Colors.white,),
+            subtitle: Text("Description Bien longue zeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebi"),
           ),
           Divider(height: 0),
           ListTile(
