@@ -16,11 +16,7 @@ class ProfilScreen extends StatefulWidget {
 }
 
 class _ProfilScreenState extends State<ProfilScreen> {
-  void _onTileTap(String tileName) {
-    // Handle tile tap
-    print('$tileName tapped');
-    // You can navigate to a new screen or perform any action here
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +34,35 @@ class _ProfilScreenState extends State<ProfilScreen> {
       ),
       body: ListView(
         children: const <Widget>[
-          Column(
+          UserNameWidget(),
+
+          Divider(height: 0),
+          ListTile(
+            leading: CircleAvatar(child: Icon(Icons.info)),
+            title: Text('Infos'),
+            subtitle: Text(
+                'Longer supporting text to demonstrate how the text wraps and how the leading and trailing widgets are centered vertically with the text.'),
+          ),
+          Divider(height: 0),
+          ListTile(
+            leading: CircleAvatar(child: Icon(Icons.phone)),
+            title: Text('mail'),
+            subtitle: Text("a@a.com"),
+            isThreeLine: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class UserNameWidget extends StatelessWidget {
+  const UserNameWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+        body: Column(
             children: [
               ListTile(
                 leading: CircleAvatar(child: Icon(Icons.account_circle_rounded)),
@@ -51,23 +75,6 @@ class _ProfilScreenState extends State<ProfilScreen> {
               ),
             ],
           ),
-
-          Divider(height: 0),
-          ListTile(
-            leading: CircleAvatar(child: Icon(Icons.info)),
-            title: Text('Headline'),
-            subtitle: Text(
-                'Longer supporting text to demonstrate how the text wraps and how the leading and trailing widgets are centered vertically with the text.'),
-          ),
-          Divider(height: 0),
-          ListTile(
-            leading: CircleAvatar(child: Icon(Icons.phone)),
-            title: Text('Telephone'),
-            subtitle: Text("+33 6 12 34 56 78"),
-            isThreeLine: true,
-          ),
-        ],
-      ),
     );
   }
 }
