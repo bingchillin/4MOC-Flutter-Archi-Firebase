@@ -209,16 +209,10 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
                 ),
                 SizedBox(width: 8),
                 IconButton(
-                  icon: Icon(Icons.info),
+                  icon: Icon(Icons.send),
                   onPressed: () {
-                    Navigator.of(context).pushNamed(
-                      MyMessageDetailScreen.routeName,
-                      arguments: {
-                        'groupId': widget.groupId,
-                        'groupName': widget.groupName,
-                        'groupDescription': widget.groupDescription,
-                      },
-                    );
+                    sendMessage(messageController.text,
+                        currentUser!.email ?? '');
                   },
                 ),
 
