@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:projet_flutter_firebase/profil_screen/profil_screen.dart';
 import 'package:projet_flutter_firebase/pages/add_group_message_screen.dart';
+import 'package:projet_flutter_firebase/pages/my_message_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   static const routeName = 'homeScreen';
@@ -14,7 +15,7 @@ class HomeScreen extends StatelessWidget {
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      // case: user not connected
+      // Case: user not connected
       return Scaffold(
         appBar: AppBar(
           title: const Text('Accueil'),
@@ -38,7 +39,10 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: FutureBuilder<QuerySnapshot>(
-        future: FirebaseFirestore.instance.collection('link_person_groupmessage').where('id_person', isEqualTo: user.email).get(),
+        future: FirebaseFirestore.instance
+            .collection('link_person_groupmessage')
+            .where('id_person', isEqualTo: user.email)
+            .get(),
         builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -54,30 +58,40 @@ class HomeScreen extends StatelessWidget {
             children: snapshot.data!.docs.map((doc) {
               String groupId = doc['id_groupmessage'];
               return FutureBuilder<DocumentSnapshot>(
-                future: FirebaseFirestore.instance.collection('group_message').doc(groupId).get(),
+                future: FirebaseFirestore.instance
+                    .collection('group_message')
+                    .doc(groupId)
+                    .get(),
                 builder: (context, AsyncSnapshot<DocumentSnapshot> groupSnapshot) {
                   if (groupSnapshot.connectionState == ConnectionState.waiting) {
-                    return const SizedBox.shrink(); // Ou un widget de chargement
+                    return const SizedBox.shrink();
                   }
                   if (groupSnapshot.hasError) {
                     return Text('Erreur : ${groupSnapshot.error}');
                   }
                   if (!groupSnapshot.hasData || !groupSnapshot.data!.exists) {
-                    return const SizedBox.shrink(); // Document non trouvé
+                    return const SizedBox.shrink();
                   }
 
-                  // get messages group data
+                  // Get group message data
                   Map<String, dynamic> groupData = groupSnapshot.data!.data() as Map<String, dynamic>;
                   String groupName = groupData['name'] ?? 'Nom inconnu';
                   String groupDescription = groupData['description'] ?? 'Description inconnue';
 
-                  // display messages group data in list
+                  // Display group message data in list
                   return ListTile(
                     title: Text(groupName),
                     subtitle: Text(groupDescription),
                     onTap: () {
-                      // pour naviguer après
-                      // pas tester mais possiblement: Navigator.of(context).pushNamed(GroupDetailScreen.routeName, arguments: groupId);
+                      Navigator.pushNamed(
+                        context,
+                        MyMessageScreen.routeName,
+                        arguments: {
+                          'groupId': groupId,
+                          'groupName': groupName,
+                          'groupDescription': groupDescription,
+                        },
+                      );
                     },
                   );
                 },
