@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ProfilScreen extends StatefulWidget {
@@ -15,30 +16,48 @@ class ProfilScreen extends StatefulWidget {
 }
 
 class _ProfilScreenState extends State<ProfilScreen> {
+  void _onTileTap(String tileName) {
+    // Handle tile tap
+    print('$tileName tapped');
+    // You can navigate to a new screen or perform any action here
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: AppBar(
+        title: const Text('Profil'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.of(context).pushNamed(ProfilScreen.routeName);
+            },
+          ),
+        ],
+      ),
       body: ListView(
         children: const <Widget>[
-          ListTile(
-            leading: CircleAvatar(child: Icon(Icons.account_circle_rounded)),
-            title: Text('Nom'),
-            subtitle: Text('Kenny'),
-            trailing: Icon(Icons.update),
+          Column(
+            children: [
+              ListTile(
+                leading: CircleAvatar(child: Icon(Icons.account_circle_rounded)),
+                title: Text('Nom'),
+                subtitle: Text('Kenny'),
+              ),
+              ListTile(
+                leading: CircleAvatar(radius: 0,),
+                subtitle: Text("Description Bien longue zeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebi"),
+              ),
+            ],
           ),
-          ListTile(
-            leading: CircleAvatar(backgroundColor: Colors.white,),
-            subtitle: Text("Description Bien longue zeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebi"),
-          ),
+
           Divider(height: 0),
           ListTile(
-            leading: CircleAvatar(child: Text('B')),
+            leading: CircleAvatar(child: Icon(Icons.info)),
             title: Text('Headline'),
             subtitle: Text(
                 'Longer supporting text to demonstrate how the text wraps and how the leading and trailing widgets are centered vertically with the text.'),
-            trailing: Icon(Icons.update),
           ),
           Divider(height: 0),
           ListTile(
