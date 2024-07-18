@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ProfilScreen extends StatefulWidget {
+import '../blocs/user_bloc.dart';
+
+class ProfilScreen extends StatelessWidget {
   static const routeName = 'profilScreen';
-
 
   static Future<void> navigateTo(BuildContext context) {
     return Navigator.of(context).pushNamed(routeName);
@@ -12,69 +14,84 @@ class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
 
   @override
-  State<ProfilScreen> createState() => _ProfilScreenState();
-}
-
-class _ProfilScreenState extends State<ProfilScreen> {
-
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profil'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.of(context).pushNamed(ProfilScreen.routeName);
-            },
-          ),
-        ],
+    return BlocProvider(
+      create: (_) => UserBloc(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Profil'),
+          actions: [
+            BlocBuilder<UserBloc, UserState>(
+              builder: (context, state) {
+                return IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    context.read<UserBloc>().add(ToggleEditMode());
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+        body: const UserProfilWidget(),
       ),
-      body: const UserProfilWidget(),
     );
   }
 }
 
 class UserProfilWidget extends StatelessWidget {
-
   const UserProfilWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: ListView(
-          children: const <Widget>[
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        final bool isEditing = state is UserEditMode;
+        return ListView(
+          children: <Widget>[
             Column(
               children: [
                 ListTile(
-                  leading: CircleAvatar(child: Icon(Icons.account_circle_rounded)),
-                  title: Text('Nom'),
-                  subtitle: Text('Kenny'),
+                  leading: const CircleAvatar(child: Icon(Icons.account_circle_rounded)),
+                  title: isEditing
+                      ? TextField(controller: TextEditingController(text: 'Kenny'))
+                      : const Text('Nom'),
+                  subtitle: isEditing
+                      ? TextField(controller: TextEditingController(text: 'Kenny'))
+                      : const Text('Kenny'),
                 ),
                 ListTile(
-                  leading: CircleAvatar(radius: 0,),
-                  subtitle: Text("Description Bien longue zeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebi"),
+                  leading: const CircleAvatar(radius: 0),
+                  subtitle: isEditing
+                      ? TextField(controller: TextEditingController(text: "Description Bien longue zeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebi"))
+                      : const Text("Description Bien longue zeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebi"),
                 ),
               ],
             ),
-            Divider(height: 0),
+            const Divider(height: 0),
             ListTile(
-              leading: CircleAvatar(child: Icon(Icons.info)),
-              title: Text('Infos'),
-              subtitle: Text(
-                  'Longer supporting text to demonstrate how the text wraps and how the leading and trailing widgets are centered vertically with the text.'),
+              leading: const CircleAvatar(child: Icon(Icons.info)),
+              title: isEditing
+                  ? TextField(controller: TextEditingController(text: 'Infos'))
+                  : const Text('Infos'),
+              subtitle: isEditing
+                  ? TextField(controller: TextEditingController(text: 'Longer supporting text to demonstrate how the text wraps and how the leading and trailing widgets are centered vertically with the text.'))
+                  : const Text('Longer supporting text to demonstrate how the text wraps and how the leading and trailing widgets are centered vertically with the text.'),
             ),
-            Divider(height: 0),
+            const Divider(height: 0),
             ListTile(
-              leading: CircleAvatar(child: Icon(Icons.email)),
-              title: Text('mail'),
-              subtitle: Text("a@a.com"),
+              leading: const CircleAvatar(child: Icon(Icons.email)),
+              title: isEditing
+                  ? TextField(controller: TextEditingController(text: 'mail'))
+                  : const Text('mail'),
+              subtitle: isEditing
+                  ? TextField(controller: TextEditingController(text: "a@a.com"))
+                  : const Text("a@a.com"),
               isThreeLine: true,
             ),
           ],
-        ),
+        );
+      },
     );
   }
 }
