@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../blocs/user_bloc.dart';
+import '../blocs/profil_bloc.dart';
 
 class ProfilScreen extends StatelessWidget {
   static const routeName = 'profilScreen';
