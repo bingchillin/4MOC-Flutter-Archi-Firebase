@@ -32,49 +32,49 @@ class _ProfilScreenState extends State<ProfilScreen> {
           ),
         ],
       ),
-      body: ListView(
-        children: const <Widget>[
-          UserNameWidget(),
-
-          Divider(height: 0),
-          ListTile(
-            leading: CircleAvatar(child: Icon(Icons.info)),
-            title: Text('Infos'),
-            subtitle: Text(
-                'Longer supporting text to demonstrate how the text wraps and how the leading and trailing widgets are centered vertically with the text.'),
-          ),
-          Divider(height: 0),
-          ListTile(
-            leading: CircleAvatar(child: Icon(Icons.phone)),
-            title: Text('mail'),
-            subtitle: Text("a@a.com"),
-            isThreeLine: true,
-          ),
-        ],
-      ),
+      body: const UserProfilWidget(),
     );
   }
 }
 
-class UserNameWidget extends StatelessWidget {
-  const UserNameWidget({super.key});
+class UserProfilWidget extends StatelessWidget {
+
+  const UserProfilWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-        body: Column(
-            children: [
-              ListTile(
-                leading: CircleAvatar(child: Icon(Icons.account_circle_rounded)),
-                title: Text('Nom'),
-                subtitle: Text('Kenny'),
-              ),
-              ListTile(
-                leading: CircleAvatar(radius: 0,),
-                subtitle: Text("Description Bien longue zeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebi"),
-              ),
-            ],
-          ),
+    return Scaffold(
+        body: ListView(
+          children: const <Widget>[
+            Column(
+              children: [
+                ListTile(
+                  leading: CircleAvatar(child: Icon(Icons.account_circle_rounded)),
+                  title: Text('Nom'),
+                  subtitle: Text('Kenny'),
+                ),
+                ListTile(
+                  leading: CircleAvatar(radius: 0,),
+                  subtitle: Text("Description Bien longue zeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebi"),
+                ),
+              ],
+            ),
+            Divider(height: 0),
+            ListTile(
+              leading: CircleAvatar(child: Icon(Icons.info)),
+              title: Text('Infos'),
+              subtitle: Text(
+                  'Longer supporting text to demonstrate how the text wraps and how the leading and trailing widgets are centered vertically with the text.'),
+            ),
+            Divider(height: 0),
+            ListTile(
+              leading: CircleAvatar(child: Icon(Icons.email)),
+              title: Text('mail'),
+              subtitle: Text("a@a.com"),
+              isThreeLine: true,
+            ),
+          ],
+        ),
     );
   }
 }
