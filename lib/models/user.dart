@@ -1,5 +1,5 @@
 
-class User {
+class AppUser {
   final String id;
   final String email;
   final String firstName;
@@ -7,7 +7,7 @@ class User {
   final String password;
   final String description;
 
-  const User({
+  const AppUser({
     required this.id,
     required this.email,
     required this.firstName,
@@ -16,8 +16,8 @@ class User {
     this.description = "Salut ! J'utilise WhazApp.",
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
+  factory AppUser.fromJson(Map<String, dynamic> json) {
+    return AppUser(
       id: json['id'],
       email: json['email'],
       firstName: json['firstName'],
