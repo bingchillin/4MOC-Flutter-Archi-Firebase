@@ -6,10 +6,8 @@ import 'package:projet_flutter_firebase/repository/firebase_data_source/remote_d
 import '../../models/user.dart';
 
 class FirebaseDataSource extends RemoteDataSource {
-  final FirebaseAuth _firebaseAuth;
-  final FirebaseFirestore _firebaseFirestore;
-
-  FirebaseDataSource(this._firebaseAuth, this._firebaseFirestore);
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
   @override
   Future<String?> getCurrentUserEmail() async {
@@ -31,5 +29,15 @@ class FirebaseDataSource extends RemoteDataSource {
     final userDoc = await _firebaseFirestore.collection('person').doc(mail).get();
     final user = AppUser.fromJson(userDoc.data()!);
     return user;
+  }
+
+  @override
+  Future<List<AppUser>> getAllUsers() async {
+    final querySnapshot = await _firebaseFirestore.collection('person').get();
+    print(_firebaseFirestore.collection('person').get());
+    final users = querySnapshot.docs.map((doc) {
+      return AppUser.fromJson(doc.data());
+    }).toList();
+    return users;
   }
 }

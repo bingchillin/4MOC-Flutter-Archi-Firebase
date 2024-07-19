@@ -13,17 +13,17 @@ class AppUser {
     required this.firstName,
     required this.pseudo,
     required this.password,
-    this.description = "Salut ! J'utilise WhazApp.",
+    required this.description,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
-      id: json['id'],
-      email: json['email'],
-      firstName: json['firstName'],
-      pseudo: json['pseudo'],
-      password: json['password'],
-      description: json['description'],
+      id: json['id'] ?? '',
+      email: json['email'] ?? '',
+      firstName: json['firstname'] ?? '',
+      pseudo: json['pseudo'] ?? '',
+      password: json['password'] ?? '',
+      description: json['description'] ?? "Salut ! J'utilise WhazApp.",
     );
   }
 
