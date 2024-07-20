@@ -25,4 +25,11 @@ class AppRepository{
     return remoteDataSource.getAllUsers();
   }
 
+  Future<void> addContact(String currentUserId, String friendId) async {
+    return remoteDataSource.addContact(currentUserId, friendId);
+  }
+
+  Future<List<String>> getUserContacts(String currentUserId) async {
+    return remoteDataSource.getUserContacts(currentUserId);
+  }
 }

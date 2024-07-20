@@ -6,4 +6,7 @@ abstract class RemoteDataSource {
   Future<void> updateUserProfil(AppUser user);
   Future<String?> getCurrentUserEmail();
   Future<List<AppUser>> getAllUsers();
+  Future<void> addContact(String currentUserId, String friendId);
+  Future<List<String>> getUserContacts(String currentUserId);
+
 }
