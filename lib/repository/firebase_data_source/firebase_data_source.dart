@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:projet_flutter_firebase/repository/firebase_data_source/remote_data_source.dart';
@@ -20,7 +19,8 @@ class FirebaseDataSource extends RemoteDataSource {
 
   @override
   Future<AppUser> getUserProfil(String mail) async {
-    final userDoc = await _firebaseFirestore.collection('person').doc(mail).get();
+    final userDoc =
+        await _firebaseFirestore.collection('person').doc(mail).get();
     final user = AppUser.fromJson(userDoc.data()!, userDoc.id);
     return user;
   }
@@ -41,6 +41,19 @@ class FirebaseDataSource extends RemoteDataSource {
   }
 
   @override
+  Future<List<String>> getUserContacts(String currentUserId) async {
+    final querySnapshot = await _firebaseFirestore
+        .collection('contact')
+        .where('id_person', isEqualTo: currentUserId)
+        .where('is_friend', isEqualTo: true)
+        .get();
+
+    return querySnapshot.docs
+        .map((doc) => doc.data()['id_person_c'] as String)
+        .toList();
+  }
+
+  @override
   Future<void> addContact(String currentUserId, String friendId) async {
     // Vérifier si le contact existe déjà
     final querySnapshot = await _firebaseFirestore
@@ -58,18 +71,51 @@ class FirebaseDataSource extends RemoteDataSource {
         'is_friend': true,
       });
     } else {
-      // Le contact existe déjà, gérer cette situation selon les besoins de l'application
       throw Exception("Le contact existe déjà.");
     }
   }
 
   @override
-  Future<List<String>> getUserContacts(String currentUserId) async {
-    final querySnapshot = await _firebaseFirestore.collection('contact')
-        .where('id_person', isEqualTo: currentUserId)
-        .where('is_friend', isEqualTo: true)
-        .get();
+  Future<void> blockUser(String currentUserId, String friendId) async {
+    try {
+      final querySnapshot = await _firebaseFirestore
+          .collection('contact')
+          .where('id_person', isEqualTo: currentUserId)
+          .where('id_person_c', isEqualTo: friendId)
+          .get();
 
-    return querySnapshot.docs.map((doc) => doc.data()['id_person_c'] as String).toList();
+      if (querySnapshot.docs.isNotEmpty) {
+        await _firebaseFirestore
+            .collection('contact')
+            .doc(querySnapshot.docs.first.id)
+            .update({'is_blocked': true});
+      } else {
+        print("Le contact n'existe pas ou a déjà été bloqué.");
+      }
+    } catch (e) {
+      print("Erreur lors du blocage de l'utilisateur : $e");
+    }
+  }
+
+  @override
+  Future<void> unblockUser(String currentUserId, String friendId) async {
+    try {
+      final querySnapshot = await _firebaseFirestore
+          .collection('contact')
+          .where('id_person', isEqualTo: currentUserId)
+          .where('id_person_c', isEqualTo: friendId)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        await _firebaseFirestore
+            .collection('contact')
+            .doc(querySnapshot.docs.first.id)
+            .update({'is_blocked': false});
+      } else {
+        print("Le contact n'existe pas.");
+      }
+    } catch (e) {
+      print("Erreur lors du déblocage de l'utilisateur : $e");
+    }
   }
 }

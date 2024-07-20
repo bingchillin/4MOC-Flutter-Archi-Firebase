@@ -25,11 +25,21 @@ class AppRepository{
     return remoteDataSource.getAllUsers();
   }
 
+  Future<List<String>> getUserContacts(String currentUserId) async {
+    return remoteDataSource.getUserContacts(currentUserId);
+  }
+
   Future<void> addContact(String currentUserId, String friendId) async {
     return remoteDataSource.addContact(currentUserId, friendId);
   }
 
-  Future<List<String>> getUserContacts(String currentUserId) async {
-    return remoteDataSource.getUserContacts(currentUserId);
+  Future<void> blockUser(String currentUserId, String friendId) async {
+    return remoteDataSource.blockUser(currentUserId, friendId);
   }
+
+  Future<void> unblockUser(String currentUserId, String friendId) async {
+    return remoteDataSource.unblockUser(currentUserId, friendId);
+  }
+
+
 }

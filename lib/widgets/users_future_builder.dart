@@ -47,6 +47,17 @@ class UserContactsFutureBuilder extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
                   }
                 },
+                onBlockPressed: isFriend ? () async {
+                  try {
+                    await appRepository.blockUser(currentUserId, user.id);
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact bloqué avec succès.')));
+                    // Mise à jour de l'état pour refléter le changement dans l'interface utilisateur
+                    contacts.remove(user.id); // Supprime l'ID de l'utilisateur des contacts pour mettre à jour l'état localement
+                    (context as Element).markNeedsBuild(); // Demande à Flutter de reconstruire l'interface utilisateur avec les nouvelles données
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
+                  }
+                } : null,
               );
             },
           );

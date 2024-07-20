@@ -46,6 +46,16 @@ class UserContactsFutureBuilder extends StatelessWidget {
                     }
                   }
                 },
+                onBlockPressed: () async {
+                  if (isFriend) {
+                    try {
+                      await appRepository.blockUser(currentUserId, user.id);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact bloqué avec succès.')));
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
+                    }
+                  }
+                },
               );
             },
           );
