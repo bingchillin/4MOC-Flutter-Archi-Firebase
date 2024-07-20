@@ -34,63 +34,52 @@ class _UserListTileWidgetState extends State<UserListTileWidget> {
 
   @override
   Widget build(BuildContext context) {
-    Widget trailingWidget;
-
-    if (_isBlocked) {
-      trailingWidget = IconButton(
-        icon: const Icon(Icons.block, color: Colors.red),
-        onPressed: widget.onBlockPressed,
-      );
-    } else if (_isFriend) {
-      trailingWidget = IconButton(
-        icon: const Icon(Icons.block),
-        onPressed: () async {
-          if (widget.onBlockPressed != null) {
-            setState(() => _isLoading = true);
-            try {
-              await widget.onBlockPressed!();
-              setState(() {
-                _isBlocked = true;
-                _isLoading = false;
-              });
-            } catch (e) {
-              setState(() => _isLoading = false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Erreur lors du blocage du contact.'))
-              );
-            }
-          }
-        },
-      );
-    } else {
-      trailingWidget = _isLoading
-          ? const CircularProgressIndicator()
-          : IconButton(
-        icon: const Icon(Icons.person_add),
-        onPressed: () async {
-          if (widget.onAddPressed != null) {
-            setState(() => _isLoading = true);
-            try {
-              await widget.onAddPressed!();
-              setState(() {
-                _isFriend = true;
-                _isLoading = false;
-              });
-            } catch (e) {
-              setState(() => _isLoading = false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Erreur lors de l\'ajout du contact.'))
-              );
-            }
-          }
-        },
-      );
-    }
-
     return ListTile(
       title: Text(widget.pseudo),
       subtitle: Text(widget.email),
-      trailing: trailingWidget,
+      trailing: _isLoading ? const CircularProgressIndicator() : _buildTrailingIcon(),
     );
+  }
+
+  Widget _buildTrailingIcon() {
+    if (_isBlocked) {
+      return IconButton(icon: const Icon(Icons.block, color: Colors.red), onPressed: widget.onBlockPressed);
+    } else if (_isFriend) {
+      return IconButton(icon: const Icon(Icons.block), onPressed: _handleBlockUser);
+    } else {
+      return IconButton(icon: const Icon(Icons.person_add), onPressed: _handleAddUser);
+    }
+  }
+
+  void _handleAddUser() async {
+    if (widget.onAddPressed != null) {
+      setState(() => _isLoading = true);
+      try {
+        await widget.onAddPressed!();
+        setState(() {
+          _isFriend = true;
+          _isLoading = false;
+        });
+      } catch (e) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
+      }
+    }
+  }
+
+  void _handleBlockUser() async {
+    if (widget.onBlockPressed != null) {
+      setState(() => _isLoading = true);
+      try {
+        await widget.onBlockPressed!();
+        setState(() {
+          _isBlocked = true;
+          _isLoading = false;
+        });
+      } catch (e) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
+      }
+    }
   }
 }
