@@ -16,9 +16,9 @@ class AppUser {
     required this.description,
   });
 
-  factory AppUser.fromJson(Map<String, dynamic> json) {
+  factory AppUser.fromJson(Map<String, dynamic> json, String id) {
     return AppUser(
-      id: json['id'] ?? '',
+      id: id,
       email: json['email'] ?? '',
       firstName: json['firstname'] ?? '',
       pseudo: json['pseudo'] ?? '',
