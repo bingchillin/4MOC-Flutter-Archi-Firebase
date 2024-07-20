@@ -4,7 +4,7 @@ import 'package:projet_flutter_firebase/repository/app_repository.dart';
 import '../models/user.dart';
 import 'user_list_tile_widget.dart';
 
-class UserContactsFutureBuilder extends StatelessWidget {
+class UserContactsFutureBuilder extends StatefulWidget {
   final AppRepository appRepository;
   final String currentUserId;
   final List<String> contacts;
@@ -17,55 +17,93 @@ class UserContactsFutureBuilder extends StatelessWidget {
   });
 
   @override
+  _UserContactsFutureBuilderState createState() => _UserContactsFutureBuilderState();
+}
+
+class _UserContactsFutureBuilderState extends State<UserContactsFutureBuilder> {
+  late Future<List<String>> _blockedContactsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _blockedContactsFuture = widget.appRepository.getBlockedContacts(widget.currentUserId);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<AppUser>>(
-      future: appRepository.getAllUsers(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return FutureBuilder<List<String>>(
+      future: _blockedContactsFuture,
+      builder: (context, blockedSnapshot) {
+        if (blockedSnapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Erreur: ${snapshot.error}'));
-        } else if (snapshot.hasData) {
-          final users = snapshot.data!.where((user) => user.email != FirebaseAuth.instance.currentUser?.email).toList();
-          return ListView.builder(
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              final user = users[index];
-              return _buildUserListTileWidget(context, user);
+        } else if (blockedSnapshot.hasError) {
+          return Center(child: Text('Erreur: ${blockedSnapshot.error}'));
+        } else if (blockedSnapshot.hasData) {
+          final blockedContacts = blockedSnapshot.data!;
+          return FutureBuilder<List<AppUser>>(
+            future: widget.appRepository.getAllUsers(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text('Erreur: ${snapshot.error}'));
+              } else if (snapshot.hasData) {
+                final users = snapshot.data!.where((user) => user.email != FirebaseAuth.instance.currentUser?.email).toList();
+                return ListView.builder(
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    final user = users[index];
+                    return _buildUserListTileWidget(context, user, blockedContacts);
+                  },
+                );
+              } else {
+                return const Center(child: Text('Aucun utilisateur trouvé'));
+              }
             },
           );
         } else {
-          return const Center(child: Text('Aucun utilisateur trouvé'));
+          return const Center(child: Text('Erreur lors de la récupération des utilisateurs bloqués.'));
         }
       },
     );
   }
 
-  Widget _buildUserListTileWidget(BuildContext context, AppUser user) {
-    final isFriend = contacts.contains(user.id);
+  Widget _buildUserListTileWidget(BuildContext context, AppUser user, List<String> blockedContacts) {
+    final isFriend = widget.contacts.contains(user.id);
+    final isBlocked = blockedContacts.contains(user.id);
     return UserListTileWidget(
       pseudo: user.pseudo,
       email: user.email,
       isFriend: isFriend,
+      isBlocked: isBlocked,
       onAddPressed: () async {
         if (!isFriend) {
           try {
-            await appRepository.addContact(currentUserId, user.id);
+            await widget.appRepository.addContact(widget.currentUserId, user.id);
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact ajouté avec succès.')));
-            contacts.add(user.id);
-            (context as Element).markNeedsBuild(); // To rebuild the widget with the new state
+            widget.contacts.add(user.id);
+            setState(() {}); // To rebuild the widget with the new state
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
           }
         }
       },
       onBlockPressed: () async {
-        if (isFriend) {
+        if (isBlocked) {
           try {
-            await appRepository.blockUser(currentUserId, user.id);
+            await widget.appRepository.unblockUser(widget.currentUserId, user.id);
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact débloqué avec succès.')));
+            blockedContacts.remove(user.id);
+            setState(() {}); // To rebuild the widget with the new state
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du déblocage du contact.')));
+          }
+        } else if (isFriend) {
+          try {
+            await widget.appRepository.blockUser(widget.currentUserId, user.id);
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact bloqué avec succès.')));
-            contacts.remove(user.id);
-            (context as Element).markNeedsBuild(); // To rebuild the widget with the new state
+            blockedContacts.add(user.id);
+            setState(() {}); // To rebuild the widget with the new state
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
           }

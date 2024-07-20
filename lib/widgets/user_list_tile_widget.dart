@@ -4,6 +4,7 @@ class UserListTileWidget extends StatefulWidget {
   final String pseudo;
   final String email;
   final bool isFriend;
+  final bool isBlocked;
   final Future<void> Function()? onAddPressed;
   final Future<void> Function()? onBlockPressed;
 
@@ -12,6 +13,7 @@ class UserListTileWidget extends StatefulWidget {
     required this.pseudo,
     required this.email,
     required this.isFriend,
+    required this.isBlocked,
     this.onAddPressed,
     this.onBlockPressed,
   });
@@ -29,7 +31,7 @@ class _UserListTileWidgetState extends State<UserListTileWidget> {
   void initState() {
     super.initState();
     _isFriend = widget.isFriend;
-    _isBlocked = false;
+    _isBlocked = widget.isBlocked;
   }
 
   @override
@@ -43,7 +45,7 @@ class _UserListTileWidgetState extends State<UserListTileWidget> {
 
   Widget _buildTrailingIcon() {
     if (_isBlocked) {
-      return IconButton(icon: const Icon(Icons.block, color: Colors.red), onPressed: _isLoading ? null : widget.onBlockPressed);
+      return IconButton(icon: const Icon(Icons.block, color: Colors.red), onPressed: _isLoading ? null : _handleUnblockUser);
     } else if (_isFriend) {
       return IconButton(icon: const Icon(Icons.block), onPressed: _isLoading ? null : _handleBlockUser);
     } else {
@@ -79,6 +81,22 @@ class _UserListTileWidgetState extends State<UserListTileWidget> {
       } catch (e) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
+      }
+    }
+  }
+
+  void _handleUnblockUser() async {
+    if (widget.onBlockPressed != null) {
+      setState(() => _isLoading = true);
+      try {
+        await widget.onBlockPressed!();
+        setState(() {
+          _isBlocked = false;
+          _isLoading = false;
+        });
+      } catch (e) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du déblocage du contact.')));
       }
     }
   }

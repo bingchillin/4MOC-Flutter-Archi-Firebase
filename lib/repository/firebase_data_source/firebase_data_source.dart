@@ -54,6 +54,19 @@ class FirebaseDataSource extends RemoteDataSource {
   }
 
   @override
+  Future<List<String>> getBlockedContacts(String currentUserId) async {
+    final querySnapshot = await _firebaseFirestore
+        .collection('contact')
+        .where('id_person', isEqualTo: currentUserId)
+        .where('is_blocked', isEqualTo: true)
+        .get();
+
+    return querySnapshot.docs
+        .map((doc) => doc.data()['id_person_c'] as String)
+        .toList();
+  }
+
+  @override
   Future<void> addContact(String currentUserId, String friendId) async {
     // Vérifier si le contact existe déjà
     final querySnapshot = await _firebaseFirestore
@@ -118,4 +131,5 @@ class FirebaseDataSource extends RemoteDataSource {
       print("Erreur lors du déblocage de l'utilisateur : $e");
     }
   }
+
 }

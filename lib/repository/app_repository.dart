@@ -41,5 +41,8 @@ class AppRepository{
     return remoteDataSource.unblockUser(currentUserId, friendId);
   }
 
+  Future<List<String>> getBlockedContacts(String currentUserId) async {
+    return remoteDataSource.getBlockedContacts(currentUserId);
+  }
 
 }
