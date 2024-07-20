@@ -43,11 +43,11 @@ class _UserListTileWidgetState extends State<UserListTileWidget> {
 
   Widget _buildTrailingIcon() {
     if (_isBlocked) {
-      return IconButton(icon: const Icon(Icons.block, color: Colors.red), onPressed: widget.onBlockPressed);
+      return IconButton(icon: const Icon(Icons.block, color: Colors.red), onPressed: _isLoading ? null : widget.onBlockPressed);
     } else if (_isFriend) {
-      return IconButton(icon: const Icon(Icons.block), onPressed: _handleBlockUser);
+      return IconButton(icon: const Icon(Icons.block), onPressed: _isLoading ? null : _handleBlockUser);
     } else {
-      return IconButton(icon: const Icon(Icons.person_add), onPressed: _handleAddUser);
+      return IconButton(icon: const Icon(Icons.person_add), onPressed: _isLoading ? null : _handleAddUser);
     }
   }
 

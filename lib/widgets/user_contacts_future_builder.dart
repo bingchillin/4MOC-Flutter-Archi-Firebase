@@ -52,6 +52,8 @@ class UserContactsFutureBuilder extends StatelessWidget {
           try {
             await appRepository.addContact(currentUserId, user.id);
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact ajouté avec succès.')));
+            contacts.add(user.id);
+            (context as Element).markNeedsBuild(); // To rebuild the widget with the new state
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
           }
@@ -62,6 +64,8 @@ class UserContactsFutureBuilder extends StatelessWidget {
           try {
             await appRepository.blockUser(currentUserId, user.id);
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact bloqué avec succès.')));
+            contacts.remove(user.id);
+            (context as Element).markNeedsBuild(); // To rebuild the widget with the new state
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
           }
