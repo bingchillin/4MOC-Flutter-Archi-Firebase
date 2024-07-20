@@ -31,36 +31,40 @@ class UserContactsFutureBuilder extends StatelessWidget {
             itemCount: users.length,
             itemBuilder: (context, index) {
               final user = users[index];
-              final isFriend = contacts.contains(user.id);
-              return UserListTileWidget(
-                pseudo: user.pseudo,
-                email: user.email,
-                isFriend: isFriend,
-                onAddPressed: () async {
-                  if (!isFriend) {
-                    try {
-                      await appRepository.addContact(currentUserId, user.id);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact ajouté avec succès.')));
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
-                    }
-                  }
-                },
-                onBlockPressed: () async {
-                  if (isFriend) {
-                    try {
-                      await appRepository.blockUser(currentUserId, user.id);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact bloqué avec succès.')));
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
-                    }
-                  }
-                },
-              );
+              return _buildUserListTileWidget(context, user);
             },
           );
         } else {
           return const Center(child: Text('Aucun utilisateur trouvé'));
+        }
+      },
+    );
+  }
+
+  Widget _buildUserListTileWidget(BuildContext context, AppUser user) {
+    final isFriend = contacts.contains(user.id);
+    return UserListTileWidget(
+      pseudo: user.pseudo,
+      email: user.email,
+      isFriend: isFriend,
+      onAddPressed: () async {
+        if (!isFriend) {
+          try {
+            await appRepository.addContact(currentUserId, user.id);
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact ajouté avec succès.')));
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
+          }
+        }
+      },
+      onBlockPressed: () async {
+        if (isFriend) {
+          try {
+            await appRepository.blockUser(currentUserId, user.id);
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact bloqué avec succès.')));
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
+          }
         }
       },
     );

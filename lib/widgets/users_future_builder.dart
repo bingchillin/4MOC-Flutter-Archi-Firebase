@@ -29,42 +29,45 @@ class UserContactsFutureBuilder extends StatelessWidget {
           final users = snapshot.data!.where((user) => user.email != FirebaseAuth.instance.currentUser?.email).toList();
           return ListView.builder(
             itemCount: users.length,
-            itemBuilder: (context, index) {
-              final user = users[index];
-              final isFriend = contacts.contains(user.id);
-              return UserListTileWidget(
-                pseudo: user.pseudo,
-                email: user.email,
-                isFriend: isFriend,
-                onAddPressed: isFriend ? null : () async {
-                  try {
-                    await appRepository.addContact(currentUserId, user.id);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact ajouté avec succès.')));
-                    // Mise à jour de l'état pour refléter le changement dans l'interface utilisateur
-                    contacts.add(user.id); // Ajoute l'ID de l'utilisateur aux contacts pour mettre à jour l'état localement
-                    (context as Element).markNeedsBuild(); // Demande à Flutter de reconstruire l'interface utilisateur avec les nouvelles données
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
-                  }
-                },
-                onBlockPressed: isFriend ? () async {
-                  try {
-                    await appRepository.blockUser(currentUserId, user.id);
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact bloqué avec succès.')));
-                    // Mise à jour de l'état pour refléter le changement dans l'interface utilisateur
-                    contacts.remove(user.id); // Supprime l'ID de l'utilisateur des contacts pour mettre à jour l'état localement
-                    (context as Element).markNeedsBuild(); // Demande à Flutter de reconstruire l'interface utilisateur avec les nouvelles données
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
-                  }
-                } : null,
-              );
-            },
+            itemBuilder: (context, index) => _buildUserTile(context, users[index]),
           );
         } else {
           return const Center(child: Text('Aucun utilisateur trouvé'));
         }
       },
     );
+  }
+
+  Widget _buildUserTile(BuildContext context, AppUser user) {
+    final isFriend = contacts.contains(user.id);
+    return UserListTileWidget(
+      pseudo: user.pseudo,
+      email: user.email,
+      isFriend: isFriend,
+      onAddPressed: isFriend ? null : () => _addUserToContacts(context, user.id),
+      onBlockPressed: isFriend ? () => _removeUserFromContacts(context, user.id) : null,
+    );
+  }
+
+  Future<void> _addUserToContacts(BuildContext context, String userId) async {
+    try {
+      await appRepository.addContact(currentUserId, userId);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact ajouté avec succès.')));
+      contacts.add(userId);
+      (context as Element).markNeedsBuild();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
+    }
+  }
+
+  Future<void> _removeUserFromContacts(BuildContext context, String userId) async {
+    try {
+      await appRepository.blockUser(currentUserId, userId);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact bloqué avec succès.')));
+      contacts.remove(userId);
+      (context as Element).markNeedsBuild();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
+    }
   }
 }
