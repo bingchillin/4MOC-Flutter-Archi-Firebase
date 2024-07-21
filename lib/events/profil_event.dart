@@ -1,15 +1,15 @@
 part of '../blocs/profil_bloc.dart';
 
-abstract class UserEvent extends Equatable {
-  const UserEvent();
+abstract class ProfilEvent extends Equatable {
+  const ProfilEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class ToggleEditMode extends UserEvent {}
+class ToggleEditMode extends ProfilEvent {}
 
-class LoadUserProfile extends UserEvent {
+class LoadUserProfile extends ProfilEvent {
   final String userEmail;
 
   LoadUserProfile(this.userEmail);
@@ -18,4 +18,4 @@ class LoadUserProfile extends UserEvent {
   List<Object> get props => [userEmail];
 }
 
-class LoadCurrentUserProfile extends UserEvent {}
+class LoadCurrentUserProfile extends ProfilEvent {}

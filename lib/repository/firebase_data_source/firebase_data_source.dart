@@ -18,9 +18,9 @@ class FirebaseDataSource extends RemoteDataSource {
   }
 
   @override
-  Future<AppUser> getUserProfil(String mail) async {
+  Future<AppUser> getUserProfil(String email) async {
     final userDoc =
-        await _firebaseFirestore.collection('person').doc(mail).get();
+        await _firebaseFirestore.collection('person').doc(email).get();
     final user = AppUser.fromJson(userDoc.data()!, userDoc.id);
     return user;
   }

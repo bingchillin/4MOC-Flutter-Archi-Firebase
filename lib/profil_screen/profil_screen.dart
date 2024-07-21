@@ -26,7 +26,7 @@ class ProfilScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Profil'),
           actions: [
-            BlocBuilder<UserBloc, UserState>(
+            BlocBuilder<UserBloc, ProfilState>(
               builder: (context, state) {
                 return IconButton(
                   icon: const Icon(Icons.edit),
@@ -38,14 +38,18 @@ class ProfilScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: BlocBuilder<UserBloc, UserState>(
+        body: BlocBuilder<UserBloc, ProfilState>(
           builder: (context, state) {
-            if (state is UserProfileLoaded) {
-              return _buildUserProfile(context, state.user);
-            } else if (state is UserEditMode) {
-              return _buildEditProfileForm(context, (state as UserProfileLoaded).user);
-            } else {
+            if (state.status == ProfilStatus.loadUserProfile) {
               return const Center(child: CircularProgressIndicator());
+            } else if (state.status == ProfilStatus.successUserProfile) {
+              return _buildUserProfile(context, state.user!);
+            } else if (state.status == ProfilStatus.editMode) {
+              return _buildEditProfileForm(context, state.user!);
+            } else if (state.error != null) {
+              return Center(child: Text('Error: ${state.error}'));
+            } else {
+              return const Center(child: Text('Error loading profile'));
             }
           },
         ),

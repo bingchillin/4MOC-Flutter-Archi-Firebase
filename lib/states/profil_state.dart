@@ -1,22 +1,37 @@
 part of '../blocs/profil_bloc.dart';
 
-abstract class UserState extends Equatable {
-  const UserState();
-
-  @override
-  List<Object> get props => [];
+enum ProfilStatus {
+  initial,
+  viewMode,
+  editMode,
+  loadUserProfile,
+  successUserProfile,
+  errorLoadUserProfile,
 }
 
-class UserViewMode extends UserState {}
+class ProfilState extends Equatable {
+  final ProfilStatus status;
+  final AppUser? user;
+  final Exception? error;
 
-class UserEditMode extends UserState {
-}
+  const ProfilState({
+      this.status=ProfilStatus.initial,
+      this.user,
+      this.error
+  });
 
-class UserProfileLoaded extends UserState {
-  final AppUser user;
-
-  const UserProfileLoaded(this.user);
+  ProfilState copyWith({
+    ProfilStatus? status,
+    AppUser? user,
+    Exception? error,
+  }) {
+    return ProfilState(
+      status: status ?? this.status,
+      user: user ?? this.user,
+      error: error ?? this.error,
+    );
+  }
 
   @override
-  List<Object> get props => [user];
+  List<Object?> get props => throw UnimplementedError();
 }
