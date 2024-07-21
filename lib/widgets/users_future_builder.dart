@@ -44,8 +44,9 @@ class UserContactsFutureBuilder extends StatelessWidget {
       pseudo: user.pseudo,
       email: user.email,
       isFriend: isFriend,
+      isBlocked: false,
       onAddPressed: isFriend ? null : () => _addUserToContacts(context, user.id),
-      onBlockPressed: isFriend ? () => _removeUserFromContacts(context, user.id) : null,
+      onBlockPressed: isFriend ? null : () => _removeUserFromContacts(context, user.id),
     );
   }
 
