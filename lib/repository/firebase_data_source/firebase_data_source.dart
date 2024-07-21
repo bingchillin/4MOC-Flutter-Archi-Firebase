@@ -134,20 +134,37 @@ class FirebaseDataSource extends RemoteDataSource {
 
   @override
   Future<void> createGroupMessage(String groupName, List<String> emails) async {
-    DocumentReference docRef = await _firebaseFirestore.collection('group_message').add({
-      'name': "Groupe test",
+    final docRef = await _firebaseFirestore.collection('group_message').add({
+      'groupName': groupName,
       'description': "Discussion avec $groupName",
-      'private_channel': false,
+      'private_channel': emails.length == 2,
+      'participants': emails,
     });
 
-    String groupId = docRef.id;
-
-    for (String email in emails) {
+    // Adding to link_person_groupmessage collection
+    for (var email in emails) {
       await _firebaseFirestore.collection('link_person_groupmessage').add({
-        'id_groupmessage': groupId,
+        'id_groupmessage': docRef.id,
         'id_person': email,
       });
     }
+  }
+
+  @override
+  Future<bool> privateConversationExists(String user1Email, String user2Email) async {
+    final querySnapshot = await _firebaseFirestore
+        .collection('group_message')
+        .where('private_channel', isEqualTo: true)
+        .where('participants', arrayContainsAny: [user1Email, user2Email])
+        .get();
+
+    for (var doc in querySnapshot.docs) {
+      final List<dynamic> participants = doc['participants'];
+      if (participants.contains(user1Email) && participants.contains(user2Email)) {
+        return true;
+      }
+    }
+    return false;
   }
 
 }

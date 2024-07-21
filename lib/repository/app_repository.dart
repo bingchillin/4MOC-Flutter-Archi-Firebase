@@ -51,4 +51,8 @@ class AppRepository{
     return remoteDataSource.createGroupMessage(groupName, emails);
   }
 
+  Future<bool> privateConversationExists(String user1email, String user2email) async {
+    return remoteDataSource.privateConversationExists(user1email, user2email);
+  }
+
 }

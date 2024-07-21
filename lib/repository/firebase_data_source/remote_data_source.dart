@@ -12,5 +12,6 @@ abstract class RemoteDataSource {
   Future<void> unblockUser(String currentUserId, String friendId);
   Future<List<String>> getBlockedContacts(String currentUserId);
   Future<void> createGroupMessage(String groupName, List<String> emails);
+  Future<bool> privateConversationExists(String user1email, String user2email);
 
 }

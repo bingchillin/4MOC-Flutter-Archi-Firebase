@@ -23,6 +23,7 @@ class UserContactsFutureBuilder extends StatefulWidget {
 class _UserContactsFutureBuilderState extends State<UserContactsFutureBuilder> {
   late Future<List<String>> _blockedContactsFuture;
   final Set<String> _selectedUsers = {};
+  final Map<String, String> _selectedUsersNames = {}; // To store selected users' names
 
   @override
   void initState() {
@@ -98,8 +99,10 @@ class _UserContactsFutureBuilderState extends State<UserContactsFutureBuilder> {
         setState(() {
           if (selected == true) {
             _selectedUsers.add(user.email); // Changed to use email
+            _selectedUsersNames[user.email] = user.pseudo; // Store the user's name
           } else {
             _selectedUsers.remove(user.email); // Changed to use email
+            _selectedUsersNames.remove(user.email); // Remove the user's name
           }
         });
       },
@@ -144,7 +147,19 @@ class _UserContactsFutureBuilderState extends State<UserContactsFutureBuilder> {
       final selectedEmails = _selectedUsers.toList();
       selectedEmails.add(FirebaseAuth.instance.currentUser!.email!); // Add the current user's email
 
-      const groupName = 'Group'; // Or you can ask for group name input from the user
+      // Check if it's a private conversation (2 participants)
+      if (selectedEmails.length == 2) {
+        final user1Email = selectedEmails[0];
+        final user2Email = selectedEmails[1];
+        final conversationExists = await widget.appRepository.privateConversationExists(user1Email, user2Email);
+        if (conversationExists) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Une conversation privée existe déjà entre ces utilisateurs.')));
+          return;
+        }
+      }
+
+      // Create group name from selected users' names
+      final groupName = _selectedUsersNames.values.join(', ');
       await widget.appRepository.createGroupMessage(groupName, selectedEmails);
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Conversation créée avec succès.')));
 
