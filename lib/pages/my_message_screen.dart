@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:projet_flutter_firebase/pages/my_message_detail_screeen.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'package:image/image.dart' as img;
 
 class MyMessageScreen extends StatefulWidget {
   static const routeName = 'myMessageScreen';
@@ -24,6 +27,10 @@ class MyMessageScreen extends StatefulWidget {
 class _MyMessageScreenState extends State<MyMessageScreen> {
   final TextEditingController messageController = TextEditingController();
   final ScrollController scrollController = ScrollController();
+  final ImagePicker _picker = ImagePicker();
+  XFile? _selectedImage;
+
+  static const int maxSize = 5 * 1024 * 1024; // 5 Mo en octets
 
   @override
   void dispose() {
@@ -44,18 +51,109 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
     return 'Inconnu';
   }
 
-  void sendMessage(String textMessage, String idPerson) async {
-    if (textMessage.trim().isEmpty) return;
+  Future<void> sendMessage({String? textMessage, String? imageUrl}) async {
+    if (textMessage == null && imageUrl == null) return;
 
     User? currentUser = FirebaseAuth.instance.currentUser;
     await FirebaseFirestore.instance.collection('discuss_message').add({
       'date_creation': Timestamp.now(),
       'id_groupmessage': widget.groupId,
       'id_person': currentUser?.email ?? 'Unknown',
-      'text_message': textMessage,
+      'text_message': textMessage ?? '',
+      'path_image': imageUrl ?? '',
     });
 
     messageController.clear();
+    setState(() {
+      _selectedImage = null;
+    });
+  }
+
+  Future<void> pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        File imageFile = File(image.path);
+        if (await imageFile.length() > maxSize) {
+          // Si le fichier est trop gros
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Erreur 14'),
+              content: Text('Le fichier sélectionné est trop volumineux. Veuillez choisir un fichier de moins de 5 Mo.'),
+              actions: [
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          );
+        } else {
+          setState(() {
+            _selectedImage = image;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
+
+  Future<void> resizeAndUploadImage() async {
+    if (_selectedImage != null) {
+      File imageFile = File(_selectedImage!.path);
+
+      // Charge image
+      img.Image? image = img.decodeImage(imageFile.readAsBytesSync());
+
+      if (image != null) {
+        // Here we redimensionaze image
+        img.Image resizedImage = img.copyResize(image, width: 600);
+
+        // save image
+        File resizedFile = File('${imageFile.parent.path}/resized_${imageFile.uri.pathSegments.last}');
+        resizedFile.writeAsBytesSync(img.encodePng(resizedImage));
+
+        // after we continue with upload
+        await uploadImage(resizedFile);
+      }
+    }
+  }
+
+  Future<void> uploadImage(File imageFile) async {
+    String fileName = '${DateTime.now().millisecondsSinceEpoch}.png';
+    Reference storageReference = FirebaseStorage.instance.ref().child('chat_images').child(fileName);
+
+    try {
+      UploadTask uploadTask = storageReference.putFile(imageFile);
+
+      uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+        double progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        print('Upload progress: $progress%');
+      });
+
+      TaskSnapshot snapshot = await uploadTask.whenComplete(() => {});
+      String imageUrl = await snapshot.ref.getDownloadURL();
+      print('Image URL: $imageUrl');
+
+      await sendMessage(imageUrl: imageUrl, textMessage: messageController.text.trim());
+    } catch (e) {
+      print('Error uploading image: $e');
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Erreur 12'),
+          content: Text('Une erreur est survenue lors du téléchargement de l\'image.'),
+          actions: [
+            TextButton(
+              child: Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override
@@ -84,6 +182,7 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
                   'groupId': widget.groupId,
                   'groupName': widget.groupName,
                   'groupDescription': widget.groupDescription,
+                  'personId': currentUser?.email
                 },
               );
             },
@@ -96,7 +195,7 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('discuss_message')
-                  .orderBy('date_creation', descending: true) // Ordre inversé
+                  .orderBy('date_creation', descending: true)
                   .snapshots(),
               builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -126,6 +225,7 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
                     Map<String, dynamic> data =
                     filteredDocs[index].data() as Map<String, dynamic>;
                     String messageText = data['text_message'] ?? 'Message vide';
+                    String imageUrl = data['path_image'] ?? '';
                     String idPerson = data['id_person'];
                     Timestamp timestamp = data['date_creation'] as Timestamp;
                     DateTime dateTime = timestamp.toDate();
@@ -135,7 +235,7 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
                       builder: (context, asyncSnapshot) {
                         if (asyncSnapshot.connectionState ==
                             ConnectionState.waiting) {
-                          return Center(
+                          return const Center(
                               child: CircularProgressIndicator());
                         }
                         if (asyncSnapshot.hasError) {
@@ -151,7 +251,7 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
                               ? Alignment.centerRight
                               : Alignment.centerLeft,
                           child: Container(
-                            margin: EdgeInsets.symmetric(
+                            margin: const EdgeInsets.symmetric(
                                 vertical: 4, horizontal: 8),
                             padding: EdgeInsets.all(8),
                             decoration: BoxDecoration(
@@ -171,11 +271,22 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
                                   ),
                                 ),
                                 SizedBox(height: 4),
-                                Text(
-                                  messageText,
-                                  style: const TextStyle(
-                                      color: Colors.white),
-                                ),
+                                if (messageText.isNotEmpty)
+                                  Text(
+                                    messageText,
+                                    style: const TextStyle(
+                                        color: Colors.white),
+                                  ),
+                                if (imageUrl.isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Image.network(
+                                      imageUrl,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Text('Erreur de chargement de l\'image');
+                                      },
+                                    ),
+                                  ),
                                 SizedBox(height: 4),
                                 Text(
                                   '${dateTime.day}/${dateTime.month}/${dateTime.year} à ${dateTime.hour}:${dateTime.minute}',
@@ -195,9 +306,22 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(
-                20, 8, 8, 16), // Ajout de padding supplémentaire en haut
+                20, 8, 8, 16),
             child: Row(
               children: [
+                IconButton(
+                  icon: Icon(Icons.photo),
+                  onPressed: pickImage,
+                ),
+                if (_selectedImage != null)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Image.file(
+                      File(_selectedImage!.path),
+                      width: 50,
+                      height: 50,
+                    ),
+                  ),
                 Expanded(
                   child: TextField(
                     controller: messageController,
@@ -211,11 +335,15 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
                 IconButton(
                   icon: Icon(Icons.send),
                   onPressed: () {
-                    sendMessage(messageController.text,
-                        currentUser!.email ?? '');
+                    if (messageController.text.trim().isNotEmpty || _selectedImage != null) {
+                      if (_selectedImage != null) {
+                        resizeAndUploadImage();
+                      } else {
+                        sendMessage(textMessage: messageController.text.trim());
+                      }
+                    }
                   },
                 ),
-
               ],
             ),
           ),
