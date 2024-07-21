@@ -11,6 +11,6 @@ abstract class RemoteDataSource {
   Future<void> blockUser(String currentUserId, String friendId);
   Future<void> unblockUser(String currentUserId, String friendId);
   Future<List<String>> getBlockedContacts(String currentUserId);
-  Future<void> createGroupMessage(String friendName);
+  Future<void> createGroupMessage(String groupName, List<String> emails);
 
 }

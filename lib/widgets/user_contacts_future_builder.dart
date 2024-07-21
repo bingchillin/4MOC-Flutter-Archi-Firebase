@@ -32,47 +32,61 @@ class _UserContactsFutureBuilderState extends State<UserContactsFutureBuilder> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<String>>(
-      future: _blockedContactsFuture,
-      builder: (context, blockedSnapshot) {
-        if (blockedSnapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (blockedSnapshot.hasError) {
-          return Center(child: Text('Erreur: ${blockedSnapshot.error}'));
-        } else if (blockedSnapshot.hasData) {
-          final blockedContacts = blockedSnapshot.data!;
-          return FutureBuilder<List<AppUser>>(
-            future: widget.appRepository.getAllUsers(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
+    return Column(
+      children: [
+        Expanded(
+          child: FutureBuilder<List<String>>(
+            future: _blockedContactsFuture,
+            builder: (context, blockedSnapshot) {
+              if (blockedSnapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Erreur: ${snapshot.error}'));
-              } else if (snapshot.hasData) {
-                final users = snapshot.data!.where((user) => user.email != FirebaseAuth.instance.currentUser?.email).toList();
-                return ListView.builder(
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final user = users[index];
-                    return _buildUserListTileWidget(context, user, blockedContacts);
+              } else if (blockedSnapshot.hasError) {
+                return Center(child: Text('Erreur: ${blockedSnapshot.error}'));
+              } else if (blockedSnapshot.hasData) {
+                final blockedContacts = blockedSnapshot.data!;
+                return FutureBuilder<List<AppUser>>(
+                  future: widget.appRepository.getAllUsers(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Erreur: ${snapshot.error}'));
+                    } else if (snapshot.hasData) {
+                      final users = snapshot.data!.where((user) => user.email != FirebaseAuth.instance.currentUser?.email).toList();
+                      return ListView.builder(
+                        itemCount: users.length,
+                        itemBuilder: (context, index) {
+                          final user = users[index];
+                          return _buildUserListTileWidget(context, user, blockedContacts);
+                        },
+                      );
+                    } else {
+                      return const Center(child: Text('Aucun utilisateur trouvé'));
+                    }
                   },
                 );
               } else {
-                return const Center(child: Text('Aucun utilisateur trouvé'));
+                return const Center(child: Text('Erreur lors de la récupération des utilisateurs bloqués.'));
               }
             },
-          );
-        } else {
-          return const Center(child: Text('Erreur lors de la récupération des utilisateurs bloqués.'));
-        }
-      },
+          ),
+        ),
+        if (_selectedUsers.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              onPressed: _createGroupMessage,
+              child: const Text('Créer une conversation'),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildUserListTileWidget(BuildContext context, AppUser user, List<String> blockedContacts) {
-    final isFriend = widget.contacts.contains(user.id);
-    final isBlocked = blockedContacts.contains(user.id);
-    final isSelected = _selectedUsers.contains(user.email);
+    final isFriend = widget.contacts.contains(user.id); // Changed to use id
+    final isBlocked = blockedContacts.contains(user.id); // Changed to use id
+    final isSelected = _selectedUsers.contains(user.email); // Changed to use email
 
     return UserListTileWidget(
       pseudo: user.pseudo,
@@ -83,19 +97,18 @@ class _UserContactsFutureBuilderState extends State<UserContactsFutureBuilder> {
       onSelectedChanged: (bool? selected) {
         setState(() {
           if (selected == true) {
-            _selectedUsers.add(user.email);
-            print(_selectedUsers);
+            _selectedUsers.add(user.email); // Changed to use email
           } else {
-            _selectedUsers.remove(user.email);
+            _selectedUsers.remove(user.email); // Changed to use email
           }
         });
       },
       onAddPressed: () async {
         if (!isFriend) {
           try {
-            await widget.appRepository.addContact(widget.currentUserId, user.id);
+            await widget.appRepository.addContact(widget.currentUserId, user.id); // Changed to use id
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact ajouté avec succès.')));
-            widget.contacts.add(user.id);
+            widget.contacts.add(user.id); // Changed to use id
             setState(() {}); // To rebuild the widget with the new state
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
@@ -105,18 +118,18 @@ class _UserContactsFutureBuilderState extends State<UserContactsFutureBuilder> {
       onBlockPressed: () async {
         if (isBlocked) {
           try {
-            await widget.appRepository.unblockUser(widget.currentUserId, user.id);
+            await widget.appRepository.unblockUser(widget.currentUserId, user.id); // Changed to use id
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact débloqué avec succès.')));
-            blockedContacts.remove(user.id);
+            blockedContacts.remove(user.id); // Changed to use id
             setState(() {}); // To rebuild the widget with the new state
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du déblocage du contact.')));
           }
         } else if (isFriend) {
           try {
-            await widget.appRepository.blockUser(widget.currentUserId, user.id);
+            await widget.appRepository.blockUser(widget.currentUserId, user.id); // Changed to use id
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contact bloqué avec succès.')));
-            blockedContacts.add(user.id);
+            blockedContacts.add(user.id); // Changed to use email
             setState(() {}); // To rebuild the widget with the new state
           } catch (e) {
             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
@@ -124,5 +137,18 @@ class _UserContactsFutureBuilderState extends State<UserContactsFutureBuilder> {
         }
       },
     );
+  }
+
+  Future<void> _createGroupMessage() async {
+    if (_selectedUsers.isNotEmpty) {
+      final selectedEmails = _selectedUsers.toList();
+      selectedEmails.add(FirebaseAuth.instance.currentUser!.email!); // Add the current user's email
+
+      const groupName = 'Group'; // Or you can ask for group name input from the user
+      await widget.appRepository.createGroupMessage(groupName, selectedEmails);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Conversation créée avec succès.')));
+
+      Navigator.pop(context);
+    }
   }
 }

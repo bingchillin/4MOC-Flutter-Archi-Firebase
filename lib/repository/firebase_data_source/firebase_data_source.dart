@@ -133,12 +133,21 @@ class FirebaseDataSource extends RemoteDataSource {
   }
 
   @override
-  Future<void> createGroupMessage(String friendName) async {
-    await _firebaseFirestore.collection('group_message').add({
-      'name': friendName,
-      'description': "Discution avec $friendName",
+  Future<void> createGroupMessage(String groupName, List<String> emails) async {
+    DocumentReference docRef = await _firebaseFirestore.collection('group_message').add({
+      'name': "Groupe test",
+      'description': "Discussion avec $groupName",
       'private_channel': false,
     });
+
+    String groupId = docRef.id;
+
+    for (String email in emails) {
+      await _firebaseFirestore.collection('link_person_groupmessage').add({
+        'id_groupmessage': groupId,
+        'id_person': email,
+      });
+    }
   }
 
 }
