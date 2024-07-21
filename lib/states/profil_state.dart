@@ -9,4 +9,14 @@ abstract class UserState extends Equatable {
 
 class UserViewMode extends UserState {}
 
-class UserEditMode extends UserState {}
+class UserEditMode extends UserState {
+}
+
+class UserProfileLoaded extends UserState {
+  final AppUser user;
+
+  const UserProfileLoaded(this.user);
+
+  @override
+  List<Object> get props => [user];
+}

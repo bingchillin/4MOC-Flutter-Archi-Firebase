@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../blocs/profil_bloc.dart';
+import '../models/user.dart';
+import '../repository/app_repository.dart';
 
 class ProfilScreen extends StatelessWidget {
   static const routeName = 'profilScreen';
@@ -15,8 +18,10 @@ class ProfilScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final repository = RepositoryProvider.of<AppRepository>(context);
+
     return BlocProvider(
-      create: (_) => UserBloc(),
+      create: (_) => UserBloc(repository)..add(LoadCurrentUserProfile()),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Profil'),
@@ -33,48 +38,59 @@ class ProfilScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: const UserProfilWidget(),
+        body: BlocBuilder<UserBloc, UserState>(
+          builder: (context, state) {
+            if (state is UserProfileLoaded) {
+              return _buildUserProfile(context, state.user);
+            } else if (state is UserEditMode) {
+              return _buildEditProfileForm(context, (state as UserProfileLoaded).user);
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
       ),
     );
   }
-}
 
-class UserProfilWidget extends StatelessWidget {
-  const UserProfilWidget({super.key});
+  Widget _buildUserProfile(BuildContext context, AppUser user) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Text('Name: ${user.firstName}'),
+          Text('Email: ${user.email}'),
+          // Add more user information here
+        ],
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<UserBloc, UserState>(
-      builder: (context, state) {
-        final bool isEditing = state is UserEditMode;
-        return ListView(
-          children: <Widget>[
-            Column(
-              children: [
-                ListTile(
-                  leading: const CircleAvatar(child: Icon(Icons.account_circle_rounded)),
-                  title:  const Text('Nom'),
-                  subtitle: isEditing
-                      ? TextField(controller: TextEditingController(text: 'Kenny'))
-                      : const Text('Kenny'),
-                ),
-                const ListTile(
-                  leading: CircleAvatar(radius: 0),
-                  subtitle: Text("Description Bien longue zeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeebi"),
-                ),
-              ],
-            ),
-            const Divider(height: 0),
-            ListTile(
-              leading: const CircleAvatar(child: Icon(Icons.info)),
-              title: const Text('Infos'),
-              subtitle: isEditing
-                  ? TextField(controller: TextEditingController(text: 'Longer supporting text to demonstrate how the text wraps and how the leading and trailing widgets are centered vertically with the text.'))
-                  : const Text('Longer supporting text to demonstrate how the text wraps and how the leading and trailing widgets are centered vertically with the text.'),
-            ),
-          ],
-        );
-      },
+  Widget _buildEditProfileForm(BuildContext context, AppUser user) {
+    final nameController = TextEditingController(text: user.firstName);
+    final emailController = TextEditingController(text: user.email);
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          TextFormField(
+            controller: nameController,
+            decoration: const InputDecoration(labelText: 'Name'),
+          ),
+          TextFormField(
+            controller: emailController,
+            decoration: const InputDecoration(labelText: 'Email'),
+          ),
+          // Add more fields here
+          ElevatedButton(
+            onPressed: () {
+              // Handle profile update
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
     );
   }
 }

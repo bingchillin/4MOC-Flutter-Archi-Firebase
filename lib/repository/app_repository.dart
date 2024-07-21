@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:projet_flutter_firebase/models/user.dart';
 
 import 'firebase_data_source/remote_data_source.dart';
 
 class AppRepository{
   final RemoteDataSource remoteDataSource;
+  final FirebaseFirestore _firebaseFirestore = FirebaseFirestore.instance;
 
   AppRepository({
     required this.remoteDataSource,
