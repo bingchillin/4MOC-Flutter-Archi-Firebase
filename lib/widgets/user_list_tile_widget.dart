@@ -5,6 +5,8 @@ class UserListTileWidget extends StatefulWidget {
   final String email;
   final bool isFriend;
   final bool isBlocked;
+  final bool isSelected;
+  final Function(bool)? onSelectedChanged;
   final Future<void> Function()? onAddPressed;
   final Future<void> Function()? onBlockPressed;
 
@@ -14,6 +16,8 @@ class UserListTileWidget extends StatefulWidget {
     required this.email,
     required this.isFriend,
     required this.isBlocked,
+    this.isSelected = false,
+    this.onSelectedChanged,
     this.onAddPressed,
     this.onBlockPressed,
   });
@@ -40,16 +44,26 @@ class _UserListTileWidgetState extends State<UserListTileWidget> {
       title: Text(widget.pseudo),
       subtitle: Text(widget.email),
       trailing: _isLoading ? const CircularProgressIndicator() : _buildTrailingIcon(),
+      tileColor: widget.isSelected ? Colors.grey[300] : null,
+      onTap: () {
+        widget.onSelectedChanged?.call(!widget.isSelected);
+      },
     );
   }
 
   Widget _buildTrailingIcon() {
     if (_isBlocked) {
-      return IconButton(icon: const Icon(Icons.block, color: Colors.red), onPressed: _isLoading ? null : _handleUnblockUser);
+      return IconButton(
+          icon: const Icon(Icons.block, color: Colors.red),
+          onPressed: _isLoading ? null : _handleUnblockUser);
     } else if (_isFriend) {
-      return IconButton(icon: const Icon(Icons.block), onPressed: _isLoading ? null : _handleBlockUser);
+      return IconButton(
+          icon: const Icon(Icons.block),
+          onPressed: _isLoading ? null : _handleBlockUser);
     } else {
-      return IconButton(icon: const Icon(Icons.person_add), onPressed: _isLoading ? null : _handleAddUser);
+      return IconButton(
+          icon: const Icon(Icons.person_add),
+          onPressed: _isLoading ? null : _handleAddUser);
     }
   }
 
@@ -64,7 +78,8 @@ class _UserListTileWidgetState extends State<UserListTileWidget> {
         });
       } catch (e) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Erreur lors de l\'ajout du contact.')));
       }
     }
   }
@@ -80,7 +95,8 @@ class _UserListTileWidgetState extends State<UserListTileWidget> {
         });
       } catch (e) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du blocage du contact.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Erreur lors du blocage du contact.')));
       }
     }
   }
@@ -96,7 +112,8 @@ class _UserListTileWidgetState extends State<UserListTileWidget> {
         });
       } catch (e) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Erreur lors du déblocage du contact.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Erreur lors du déblocage du contact.')));
       }
     }
   }

@@ -22,6 +22,7 @@ class UserContactsFutureBuilder extends StatefulWidget {
 
 class _UserContactsFutureBuilderState extends State<UserContactsFutureBuilder> {
   late Future<List<String>> _blockedContactsFuture;
+  final Set<String> _selectedUsers = {};
 
   @override
   void initState() {
@@ -71,11 +72,24 @@ class _UserContactsFutureBuilderState extends State<UserContactsFutureBuilder> {
   Widget _buildUserListTileWidget(BuildContext context, AppUser user, List<String> blockedContacts) {
     final isFriend = widget.contacts.contains(user.id);
     final isBlocked = blockedContacts.contains(user.id);
+    final isSelected = _selectedUsers.contains(user.email);
+
     return UserListTileWidget(
       pseudo: user.pseudo,
       email: user.email,
       isFriend: isFriend,
       isBlocked: isBlocked,
+      isSelected: isSelected,
+      onSelectedChanged: (bool? selected) {
+        setState(() {
+          if (selected == true) {
+            _selectedUsers.add(user.email);
+            print(_selectedUsers);
+          } else {
+            _selectedUsers.remove(user.email);
+          }
+        });
+      },
       onAddPressed: () async {
         if (!isFriend) {
           try {

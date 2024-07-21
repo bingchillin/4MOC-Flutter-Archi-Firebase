@@ -132,4 +132,13 @@ class FirebaseDataSource extends RemoteDataSource {
     }
   }
 
+  @override
+  Future<void> createGroupMessage(String friendName) async {
+    await _firebaseFirestore.collection('group_message').add({
+      'name': friendName,
+      'description': "Discution avec $friendName",
+      'private_channel': false,
+    });
+  }
+
 }

@@ -47,4 +47,8 @@ class AppRepository{
     return remoteDataSource.getBlockedContacts(currentUserId);
   }
 
+  Future<void> createGroupMessage(String friendName) async {
+    return remoteDataSource.createGroupMessage(friendName);
+  }
+
 }
