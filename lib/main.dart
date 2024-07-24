@@ -37,7 +37,6 @@ class MyApp extends StatelessWidget {
         routes: {
           LogInScreen.routeName: (context) => const LogInScreen(),
           SignUpScreen.routeName: (context) => const SignUpScreen(),
-          ProfilScreen.routeName: (context) => const ProfilScreen(),
           HomeScreen.routeName: (context) => const HomeScreen(),
           AddGroupMessageScreen.routeName: (context) => const AddGroupMessageScreen(),
           MyMessageDetailScreen.routeName: (context) => MyMessageDetailScreen(),
@@ -51,6 +50,12 @@ class MyApp extends StatelessWidget {
                 groupName: args['groupName'],
                 groupDescription: args['groupDescription'],
               ),
+            );
+          }
+          if(settings.name == ProfilScreen.routeName){
+            final args = settings.arguments as String;
+            return MaterialPageRoute(
+              builder: (context) => ProfilScreen(email: args),
             );
           }
           return null;

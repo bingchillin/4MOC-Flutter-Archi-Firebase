@@ -2,10 +2,14 @@ part of '../blocs/profil_bloc.dart';
 
 enum ProfilStatus {
   initial,
-  viewMode,
-  editMode,
-  loadUserProfile,
+
+  getUserProfile,
   successUserProfile,
+
+  updateUserProfile,
+  successUpdateUserProfile,
+
+  errorUpdateUserProfile,
   errorLoadUserProfile,
 }
 
@@ -33,5 +37,5 @@ class ProfilState extends Equatable {
   }
 
   @override
-  List<Object?> get props => throw UnimplementedError();
+  List<Object?> get props => throw Exception();
 }

@@ -11,22 +11,13 @@ class UserBloc extends Bloc<ProfilEvent, ProfilState> {
   final AppRepository repository;
 
   UserBloc(this.repository) : super(const ProfilState()) {
-    on<ToggleEditMode>(_onToggleEditMode);
     on<LoadUserProfile>(_onLoadUserProfile);
-    on<LoadCurrentUserProfile>(_onLoadCurrentUserProfile);
-  }
-
-  void _onToggleEditMode(ToggleEditMode event, Emitter<ProfilState> emit) {
-    if (state.status == ProfilStatus.viewMode) {
-      emit(state.copyWith(status: ProfilStatus.editMode));
-    } else {
-      emit(state.copyWith(status: ProfilStatus.viewMode));
-    }
+    on<UpdateUserProfile>(_onUpdateUserProfile);
   }
 
   Future<void> _onLoadUserProfile(LoadUserProfile event, Emitter<ProfilState> emit) async {
     try {
-      emit(state.copyWith(status: ProfilStatus.loadUserProfile));
+      emit(state.copyWith(status: ProfilStatus.getUserProfile));
       final user = await repository.getUserProfil(event.userEmail);
       emit(state.copyWith(status: ProfilStatus.successUserProfile, user: user));
     } catch (e) {
@@ -34,18 +25,13 @@ class UserBloc extends Bloc<ProfilEvent, ProfilState> {
     }
   }
 
-  Future<void> _onLoadCurrentUserProfile(LoadCurrentUserProfile event, Emitter<ProfilState> emit) async {
+  Future<void> _onUpdateUserProfile(UpdateUserProfile event, Emitter<ProfilState> emit) async {
     try {
-      emit(state.copyWith(status: ProfilStatus.loadUserProfile));
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null && user.email != null) {
-        final profile = await repository.getUserProfil(user.email!);
-        emit(state.copyWith(status: ProfilStatus.successUserProfile, user: profile));
-      } else {
-        emit(state.copyWith(status: ProfilStatus.viewMode, error: Exception("No user signed in"))); // Handle error appropriately
-      }
+      emit(state.copyWith(status: ProfilStatus.updateUserProfile));
+      await repository.updateUserProfil(event.user);
+      emit(state.copyWith(status: ProfilStatus.successUpdateUserProfile, user: event.user));
     } catch (e) {
-      emit(state.copyWith(status: ProfilStatus.errorLoadUserProfile, error: e as Exception)); // Handle error appropriately
+      emit(state.copyWith(status: ProfilStatus.errorUpdateUserProfile, error: e as Exception));
     }
   }
 }
