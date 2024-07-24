@@ -75,11 +75,10 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
       if (image != null) {
         File imageFile = File(image.path);
         if (await imageFile.length() > maxSize) {
-          // Si le fichier est trop gros
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              title: Text('Erreur 14'),
+              title: Text('Erreur'),
               content: Text('Le fichier sélectionné est trop volumineux. Veuillez choisir un fichier de moins de 5 Mo.'),
               actions: [
                 TextButton(
@@ -104,18 +103,13 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
     if (_selectedImage != null) {
       File imageFile = File(_selectedImage!.path);
 
-      // Charge image
       img.Image? image = img.decodeImage(imageFile.readAsBytesSync());
 
       if (image != null) {
-        // Here we redimensionaze image
         img.Image resizedImage = img.copyResize(image, width: 600);
-
-        // save image
         File resizedFile = File('${imageFile.parent.path}/resized_${imageFile.uri.pathSegments.last}');
         resizedFile.writeAsBytesSync(img.encodePng(resizedImage));
 
-        // after we continue with upload
         await uploadImage(resizedFile);
       }
     }
@@ -143,7 +137,7 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Erreur 12'),
+          title: Text('Erreur'),
           content: Text('Une erreur est survenue lors du téléchargement de l\'image.'),
           actions: [
             TextButton(
@@ -192,160 +186,225 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
       body: Column(
         children: [
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('discuss_message')
-                  .orderBy('date_creation', descending: true)
-                  .snapshots(),
-              builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(child: Text('Erreur : ${snapshot.error}'));
-                }
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(
-                      child: Text('Aucun message trouvé pour ce groupe'));
-                }
-
-                List<DocumentSnapshot> filteredDocs =
-                snapshot.data!.docs.where((doc) {
-                  Map<String, dynamic> data =
-                  doc.data() as Map<String, dynamic>;
-                  String docGroupId = data['id_groupmessage'];
-                  return docGroupId == widget.groupId;
-                }).toList();
-
-                return ListView.builder(
-                  controller: scrollController,
-                  reverse: true,
-                  itemCount: filteredDocs.length,
-                  itemBuilder: (context, index) {
-                    Map<String, dynamic> data =
-                    filteredDocs[index].data() as Map<String, dynamic>;
-                    String messageText = data['text_message'] ?? 'Message vide';
-                    String imageUrl = data['path_image'] ?? '';
-                    String idPerson = data['id_person'];
-                    Timestamp timestamp = data['date_creation'] as Timestamp;
-                    DateTime dateTime = timestamp.toDate();
-
-                    return FutureBuilder<String>(
-                      future: getPseudo(idPerson),
-                      builder: (context, asyncSnapshot) {
-                        if (asyncSnapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
-                        if (asyncSnapshot.hasError) {
-                          return Center(
-                              child: Text('Erreur : ${asyncSnapshot.error}'));
-                        }
-                        String pseudo = asyncSnapshot.data ?? 'Inconnu';
-                        bool isCurrentUser =
-                            idPerson == currentUser?.email;
-
-                        return Align(
-                          alignment: isCurrentUser
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(
-                                vertical: 4, horizontal: 8),
-                            padding: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: isCurrentUser
-                                  ? Colors.green
-                                  : Colors.blueGrey,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isCurrentUser ? 'Moi' : pseudo,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                if (messageText.isNotEmpty)
-                                  Text(
-                                    messageText,
-                                    style: const TextStyle(
-                                        color: Colors.white),
-                                  ),
-                                if (imageUrl.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: Image.network(
-                                      imageUrl,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return Text('Erreur de chargement de l\'image');
-                                      },
-                                    ),
-                                  ),
-                                SizedBox(height: 4),
-                                Text(
-                                  '${dateTime.day}/${dateTime.month}/${dateTime.year} à ${dateTime.hour}:${dateTime.minute}',
-                                  style: const TextStyle(
-                                      color: Colors.white70),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                );
-              },
+            child: MessageList(
+              groupId: widget.groupId,
+              scrollController: scrollController,
+              getPseudo: getPseudo,
+              currentUserEmail: currentUser?.email,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-                20, 8, 8, 16),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(Icons.photo),
-                  onPressed: pickImage,
-                ),
-                if (_selectedImage != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Image.file(
-                      File(_selectedImage!.path),
-                      width: 50,
-                      height: 50,
-                    ),
-                  ),
-                Expanded(
-                  child: TextField(
-                    controller: messageController,
-                    decoration: const InputDecoration(
-                      hintText: 'Entrez votre message...',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(Icons.send),
-                  onPressed: () {
-                    if (messageController.text.trim().isNotEmpty || _selectedImage != null) {
-                      if (_selectedImage != null) {
-                        resizeAndUploadImage();
-                      } else {
-                        sendMessage(textMessage: messageController.text.trim());
-                      }
-                    }
+          MessageInput(
+            messageController: messageController,
+            pickImage: pickImage,
+            resizeAndUploadImage: resizeAndUploadImage,
+            sendMessage: () => sendMessage(textMessage: messageController.text.trim()),
+            selectedImage: _selectedImage,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MessageList extends StatelessWidget {
+  final String groupId;
+  final ScrollController scrollController;
+  final Future<String> Function(String) getPseudo;
+  final String? currentUserEmail;
+
+  const MessageList({
+    Key? key,
+    required this.groupId,
+    required this.scrollController,
+    required this.getPseudo,
+    this.currentUserEmail,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('discuss_message')
+          .orderBy('date_creation', descending: true)
+          .snapshots(),
+      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Erreur : ${snapshot.error}'));
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Center(child: Text('Aucun message trouvé pour ce groupe'));
+        }
+
+        List<DocumentSnapshot> filteredDocs = snapshot.data!.docs.where((doc) {
+          Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+          String docGroupId = data['id_groupmessage'];
+          return docGroupId == groupId;
+        }).toList();
+
+        return ListView.builder(
+          controller: scrollController,
+          reverse: true,
+          itemCount: filteredDocs.length,
+          itemBuilder: (context, index) {
+            Map<String, dynamic> data = filteredDocs[index].data() as Map<String, dynamic>;
+            String messageText = data['text_message'] ?? 'Message vide';
+            String imageUrl = data['path_image'] ?? '';
+            String idPerson = data['id_person'];
+            Timestamp timestamp = data['date_creation'] as Timestamp;
+            DateTime dateTime = timestamp.toDate();
+
+            return FutureBuilder<String>(
+              future: getPseudo(idPerson),
+              builder: (context, asyncSnapshot) {
+                if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (asyncSnapshot.hasError) {
+                  return Center(child: Text('Erreur : ${asyncSnapshot.error}'));
+                }
+                String pseudo = asyncSnapshot.data ?? 'Inconnu';
+                bool isCurrentUser = idPerson == currentUserEmail;
+
+                return MessageTile(
+                  pseudo: pseudo,
+                  messageText: messageText,
+                  imageUrl: imageUrl,
+                  dateTime: dateTime,
+                  isCurrentUser: isCurrentUser,
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class MessageTile extends StatelessWidget {
+  final String pseudo;
+  final String messageText;
+  final String imageUrl;
+  final DateTime dateTime;
+  final bool isCurrentUser;
+
+  const MessageTile({
+    Key? key,
+    required this.pseudo,
+    required this.messageText,
+    required this.imageUrl,
+    required this.dateTime,
+    required this.isCurrentUser,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: isCurrentUser ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        padding: EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isCurrentUser ? Colors.green : Colors.blueGrey,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isCurrentUser ? 'Moi' : pseudo,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 4),
+            if (messageText.isNotEmpty)
+              Text(
+                messageText,
+                style: const TextStyle(color: Colors.white),
+              ),
+            if (imageUrl.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Image.network(
+                  imageUrl,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Text('Erreur de chargement de l\'image');
                   },
                 ),
-              ],
+              ),
+            SizedBox(height: 4),
+            Text(
+              '${dateTime.day}/${dateTime.month}/${dateTime.year} à ${dateTime.hour}:${dateTime.minute}',
+              style: const TextStyle(color: Colors.white70),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class MessageInput extends StatelessWidget {
+  final TextEditingController messageController;
+  final VoidCallback pickImage;
+  final VoidCallback resizeAndUploadImage;
+  final VoidCallback sendMessage;
+  final XFile? selectedImage;
+
+  const MessageInput({
+    Key? key,
+    required this.messageController,
+    required this.pickImage,
+    required this.resizeAndUploadImage,
+    required this.sendMessage,
+    this.selectedImage,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 8, 16),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(Icons.photo),
+            onPressed: pickImage,
+          ),
+          if (selectedImage != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Image.file(
+                File(selectedImage!.path),
+                width: 50,
+                height: 50,
+              ),
+            ),
+          Expanded(
+            child: TextField(
+              controller: messageController,
+              decoration: const InputDecoration(
+                hintText: 'Entrez votre message...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+          SizedBox(width: 8),
+          IconButton(
+            icon: Icon(Icons.send),
+            onPressed: () {
+              if (messageController.text.trim().isNotEmpty || selectedImage != null) {
+                if (selectedImage != null) {
+                  resizeAndUploadImage();
+                } else {
+                  sendMessage();
+                }
+              }
+            },
           ),
         ],
       ),
