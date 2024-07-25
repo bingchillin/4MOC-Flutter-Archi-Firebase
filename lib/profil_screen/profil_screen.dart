@@ -56,6 +56,9 @@ class ProfilScreen extends StatelessWidget {
         ),
         body: BlocBuilder<UserBloc, ProfilState>(
           builder: (context, state) {
+            if (state.status == ProfilStatus.initial) {
+              return const Center(child: CircularProgressIndicator());
+            } else
             if (state.status == ProfilStatus.getUserProfile) {
               return const Center(child: CircularProgressIndicator());
             } else if (state.status == ProfilStatus.successUserProfile) {
