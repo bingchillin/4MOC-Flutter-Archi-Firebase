@@ -27,6 +27,24 @@ class AppUser {
     );
   }
 
+  AppUser copyWith({
+    String? id,
+    String? email,
+    String? firstName,
+    String? pseudo,
+    String? password,
+    String? description,
+  }) {
+    return AppUser(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      firstName: firstName ?? this.firstName,
+      pseudo: pseudo ?? this.pseudo,
+      password: password ?? this.password,
+      description: description ?? this.description,
+    );
+  }
+
   @override
   List<Object?> get props => [id];
 }

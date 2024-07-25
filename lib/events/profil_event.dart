@@ -7,15 +7,20 @@ abstract class ProfilEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class ToggleEditMode extends ProfilEvent {}
-
 class LoadUserProfile extends ProfilEvent {
   final String userEmail;
 
-  LoadUserProfile(this.userEmail);
+  const LoadUserProfile({required this.userEmail});
 
   @override
   List<Object> get props => [userEmail];
 }
 
-class LoadCurrentUserProfile extends ProfilEvent {}
+class UpdateUserProfile extends ProfilEvent {
+  final AppUser user;
+
+  const UpdateUserProfile(this.user);
+
+  @override
+  List<Object> get props => [user];
+}

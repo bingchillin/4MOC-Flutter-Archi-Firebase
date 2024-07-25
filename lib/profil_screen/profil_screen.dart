@@ -10,42 +10,61 @@ import '../repository/app_repository.dart';
 class ProfilScreen extends StatelessWidget {
   static const routeName = 'profilScreen';
 
-  static Future<void> navigateTo(BuildContext context) {
-    return Navigator.of(context).pushNamed(routeName);
+  static Future<void> navigateTo(BuildContext context) async {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      final email = currentUser.email;
+      if (email != null) {
+        await Navigator.of(context).pushNamed(
+          routeName,
+          arguments: email,
+        );
+      } else {
+        // Handle the case where the email is null
+        // e.g., show a dialog or log out the user
+      }
+    } else {
+      // Handle the case where the user is not logged in
+      // e.g., navigate to the login screen
+    }
   }
 
-  const ProfilScreen({super.key});
+  final String email;
+
+  const ProfilScreen({super.key, required this.email});
 
   @override
   Widget build(BuildContext context) {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+    final String? currentEmail = currentUser?.email;
+
     final repository = RepositoryProvider.of<AppRepository>(context);
 
     return BlocProvider(
-      create: (_) => UserBloc(repository)..add(LoadCurrentUserProfile()),
+      create: (_) => UserBloc(repository)..add(LoadUserProfile(userEmail: email)),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Profil'),
           actions: [
-            BlocBuilder<UserBloc, ProfilState>(
-              builder: (context, state) {
-                return IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    context.read<UserBloc>().add(ToggleEditMode());
-                  },
-                );
-              },
-            ),
+            if (currentEmail == email)
+              BlocBuilder<UserBloc, ProfilState>(
+                builder: (context, state) {
+                  return IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {
+                      // Your onPressed code here
+                    },
+                  );
+                },
+              ),
           ],
         ),
         body: BlocBuilder<UserBloc, ProfilState>(
           builder: (context, state) {
-            if (state.status == ProfilStatus.loadUserProfile) {
+            if (state.status == ProfilStatus.getUserProfile) {
               return const Center(child: CircularProgressIndicator());
             } else if (state.status == ProfilStatus.successUserProfile) {
               return _buildUserProfile(context, state.user!);
-            } else if (state.status == ProfilStatus.editMode) {
-              return _buildEditProfileForm(context, state.user!);
             } else if (state.error != null) {
               return Center(child: Text('Error: ${state.error}'));
             } else {
@@ -89,7 +108,10 @@ class ProfilScreen extends StatelessWidget {
           // Add more fields here
           ElevatedButton(
             onPressed: () {
-              // Handle profile update
+              context.read<UserBloc>().add(UpdateUserProfile(user.copyWith(
+                firstName: nameController.text,
+                email: emailController.text,
+              )));
             },
             child: const Text('Save'),
           ),
