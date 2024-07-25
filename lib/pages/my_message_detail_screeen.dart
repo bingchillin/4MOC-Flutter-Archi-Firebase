@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import '../profil_screen/profil_screen.dart';
+
 class MyMessageDetailScreen extends StatelessWidget {
   static const routeName = 'my_message_detail_screen';
 
@@ -105,10 +107,7 @@ class MyMessageDetailScreen extends StatelessWidget {
                         title: Text(email == currentUserEmail ? 'Moi' : pseudo),
                         onTap: () {
                           // Naviguer vers l'écran de profil avec l'email comme argument
-                          /*Navigator.of(context).pushNamed(
-                            ProfilScreen.routeName,
-                            arguments: {'email': email},
-                          );*/
+                          ProfilScreen.navigateTo(context, email);
                         },
                       );
                     },
