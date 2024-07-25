@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:projet_flutter_firebase/profil_screen/edit_profil_form.dart';
 
 import '../blocs/profil_bloc.dart';
 import '../models/user.dart';
@@ -40,7 +41,12 @@ class ProfilScreen extends StatelessWidget {
                   return IconButton(
                     icon: const Icon(Icons.edit),
                     onPressed: () {
-                      // Your onPressed code here
+                      showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return EditProfilForm(user:  state.user!);
+                        },
+                      );
                     },
                   );
                 },
@@ -65,45 +71,28 @@ class ProfilScreen extends StatelessWidget {
   }
 
   Widget _buildUserProfile(BuildContext context, AppUser user) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
+    return Container(
+      child: ListView(
         children: [
-          Text('Name: ${user.firstName}'),
-          Text('Email: ${user.email}'),
-          // Add more user information here
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEditProfileForm(BuildContext context, AppUser user) {
-    final nameController = TextEditingController(text: user.firstName);
-    final emailController = TextEditingController(text: user.email);
-
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          TextFormField(
-            controller: nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
+          ListTile(
+            leading: const Icon(Icons.email),
+            title: const Text('Pseudo'),
+            subtitle: Text(user.pseudo),
           ),
-          TextFormField(
-            controller: emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
+          const Divider(height: 0),
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('Name'),
+            subtitle: Text(user.firstName),
           ),
-          // Add more fields here
-          ElevatedButton(
-            onPressed: () {
-              context.read<UserBloc>().add(UpdateUserProfile(user.copyWith(
-                firstName: nameController.text,
-                email: emailController.text,
-              )));
-            },
-            child: const Text('Save'),
+          const Divider(height: 0),
+          ListTile(
+            leading: const Icon(Icons.description),
+            title: const Text('Description'),
+            subtitle: Text(user.description),
           ),
         ],
+
       ),
     );
   }
