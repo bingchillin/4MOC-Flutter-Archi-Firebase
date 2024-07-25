@@ -19,11 +19,28 @@ class FirebaseDataSource extends RemoteDataSource {
 
   @override
   Future<AppUser> getUserProfil(String email) async {
-    final userDoc =
-        await _firebaseFirestore.collection('person').doc(email).get();
-    final user = AppUser.fromJson(userDoc.data()!, userDoc.id);
-    return user;
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('person')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final docSnapshot = querySnapshot.docs.first;
+        final data = docSnapshot.data();
+        return AppUser.fromJson(
+          data,
+          docSnapshot.id,
+        );
+      } else {
+        throw Exception('Post not found');
+      }
+    } catch (e) {
+      throw Exception('Error fetching post: $e');
+    }
   }
+
 
   @override
   Future<String?> getCurrentUserEmail() async {
@@ -32,8 +49,14 @@ class FirebaseDataSource extends RemoteDataSource {
 
   @override
   Future<void> updateUserProfil(AppUser user) async {
-    await _firebaseFirestore.collection('person').doc(user.email).set({
-      'name': user.firstName,
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('person')
+        .where('email', isEqualTo: user.email)
+        .limit(1)
+        .get();
+
+    await _firebaseFirestore.collection('person').doc(querySnapshot.docs.first.id).update({
+      'prenom': user.firstName,
       'pseudo': user.pseudo,
       'password': user.password,
       'description': user.description,

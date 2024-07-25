@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.account_circle),
               onPressed: () {
-                Navigator.of(context).pushNamed(ProfilScreen.routeName);
+                ProfilScreen.navigateTo(context, user.email!);
               },
             ),
           ],

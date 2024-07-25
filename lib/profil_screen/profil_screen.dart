@@ -10,23 +10,11 @@ import '../repository/app_repository.dart';
 class ProfilScreen extends StatelessWidget {
   static const routeName = 'profilScreen';
 
-  static Future<void> navigateTo(BuildContext context) async {
-    final User? currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      final email = currentUser.email;
-      if (email != null) {
-        await Navigator.of(context).pushNamed(
-          routeName,
-          arguments: email,
-        );
-      } else {
-        // Handle the case where the email is null
-        // e.g., show a dialog or log out the user
-      }
-    } else {
-      // Handle the case where the user is not logged in
-      // e.g., navigate to the login screen
-    }
+  static Future<void> navigateTo(BuildContext context,String email){
+    return Navigator.of(context).pushNamed(
+      routeName,
+      arguments: email,
+    );
   }
 
   final String email;

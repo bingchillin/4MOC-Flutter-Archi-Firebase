@@ -20,7 +20,7 @@ class AppUser {
     return AppUser(
       id: id,
       email: json['email'] ?? '',
-      firstName: json['firstname'] ?? '',
+      firstName: json['prenom'] ?? '',
       pseudo: json['pseudo'] ?? '',
       password: json['password'] ?? '',
       description: json['description'] ?? "Salut ! J'utilise WhazApp.",

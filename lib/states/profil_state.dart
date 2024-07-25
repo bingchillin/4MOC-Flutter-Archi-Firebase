@@ -13,7 +13,7 @@ enum ProfilStatus {
   errorLoadUserProfile,
 }
 
-class ProfilState extends Equatable {
+class ProfilState {
   final ProfilStatus status;
   final AppUser? user;
   final Exception? error;
@@ -35,7 +35,4 @@ class ProfilState extends Equatable {
       error: error ?? this.error,
     );
   }
-
-  @override
-  List<Object?> get props => throw Exception();
 }

@@ -20,8 +20,8 @@ class UserBloc extends Bloc<ProfilEvent, ProfilState> {
       emit(state.copyWith(status: ProfilStatus.getUserProfile));
       final user = await repository.getUserProfil(event.userEmail);
       emit(state.copyWith(status: ProfilStatus.successUserProfile, user: user));
-    } catch (e) {
-      emit(state.copyWith(status: ProfilStatus.errorLoadUserProfile, error: e as Exception));
+    } on Exception catch (e) {
+      emit(state.copyWith(status: ProfilStatus.errorLoadUserProfile, error: e));
     }
   }
 
@@ -30,8 +30,8 @@ class UserBloc extends Bloc<ProfilEvent, ProfilState> {
       emit(state.copyWith(status: ProfilStatus.updateUserProfile));
       await repository.updateUserProfil(event.user);
       emit(state.copyWith(status: ProfilStatus.successUpdateUserProfile, user: event.user));
-    } catch (e) {
-      emit(state.copyWith(status: ProfilStatus.errorUpdateUserProfile, error: e as Exception));
+    } on Exception catch (e) {
+      emit(state.copyWith(status: ProfilStatus.errorUpdateUserProfile, error: e));
     }
   }
 }
