@@ -30,7 +30,7 @@ class _MyMessageScreenState extends State<MyMessageScreen> {
   final ImagePicker _picker = ImagePicker();
   XFile? _selectedImage;
 
-  static const int maxSize = 5 * 1024 * 1024; // 5 Mo en octets
+  static const int maxSize = 5 * 1024 * 1024; // on peut pas plus de 5 Mo sur le storage firebase
 
   @override
   void dispose() {
