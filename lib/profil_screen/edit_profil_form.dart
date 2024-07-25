@@ -14,50 +14,65 @@ class EditProfilForm extends StatefulWidget {
 }
 
 class _EditProfilFormState extends State<EditProfilForm> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController pseudoController;
   late TextEditingController nameController;
-  late TextEditingController emailController;
+  late TextEditingController descriptionController;
 
   @override
   void initState() {
     super.initState();
+    pseudoController = TextEditingController(text: widget.user.pseudo);
     nameController = TextEditingController(text: widget.user.firstName);
-    emailController = TextEditingController(text: widget.user.email);
+    descriptionController = TextEditingController(text: widget.user.description);
   }
 
   @override
   void dispose() {
+    pseudoController.dispose();
     nameController.dispose();
-    emailController.dispose();
+    descriptionController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextFormField(
-            controller: nameController,
-            decoration: const InputDecoration(labelText: 'Name'),
+    return Scaffold(
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: pseudoController,
+                  decoration: const InputDecoration(labelText: 'Pseudo'),
+                ),
+                TextFormField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Name'),
+                ),
+                TextFormField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                ),
+                // Add more fields here
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<UserBloc>().add(UpdateUserProfile(widget.user.copyWith(
+                      firstName: nameController.text,
+                      description: descriptionController.text,
+                    )));
+                    Navigator.of(context).pop();  // Close the bottom sheet after saving
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            ),
           ),
-          TextFormField(
-            controller: emailController,
-            decoration: const InputDecoration(labelText: 'Email'),
-          ),
-          // Add more fields here
-          ElevatedButton(
-            onPressed: () {
-              context.read<UserBloc>().add(UpdateUserProfile(widget.user.copyWith(
-                firstName: nameController.text,
-                email: emailController.text,
-              )));
-              Navigator.of(context).pop();  // Close the bottom sheet after saving
-            },
-            child: const Text('Save'),
-          ),
-        ],
+        ),
       ),
     );
   }

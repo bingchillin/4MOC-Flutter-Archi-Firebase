@@ -11,7 +11,7 @@ import '../repository/app_repository.dart';
 class ProfilScreen extends StatelessWidget {
   static const routeName = 'profilScreen';
 
-  static Future<void> navigateTo(BuildContext context,String email){
+  static Future<void> navigateTo(BuildContext context, String email) {
     return Navigator.of(context).pushNamed(
       routeName,
       arguments: email,
@@ -43,6 +43,7 @@ class ProfilScreen extends StatelessWidget {
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
+                        isScrollControlled: true,
                         builder: (context) {
                           return EditProfilForm(user:  state.user!);
                         },
@@ -92,7 +93,6 @@ class ProfilScreen extends StatelessWidget {
             subtitle: Text(user.description),
           ),
         ],
-
       ),
     );
   }
